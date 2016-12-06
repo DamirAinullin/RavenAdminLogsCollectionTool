@@ -1,0 +1,60 @@
+﻿<Window x:Class="RavenAdminLogsCollectionTool.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ignore="http://www.galasoft.ch/ignore"
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
+        xmlns:model="clr-namespace:RavenAdminLogsCollectionTool.Model"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        mc:Ignorable="d ignore"
+        Height="580"
+        Width="910.4"
+        Title="RavenDB admin logs collection tool"
+        DataContext="{Binding Main, Source={StaticResource Locator}}">
+
+    <Window.Resources>
+        <ObjectDataProvider x:Key="DataFromLogLevelEnum" MethodName="GetValues"
+                            ObjectType="{x:Type system:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="model:LogLevel"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+    </Window.Resources>
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding WindowLoadedCommand}"/>
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    <Grid x:Name="LayoutRoot" Margin="0,0,0,0.0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="15*"/>
+            <RowDefinition Height="110*"/>
+        </Grid.RowDefinitions>
+        <TextBlock x:Name="DatabaseUrlTextBlock" HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="Database URL" VerticalAlignment="Top" RenderTransformOrigin="0.163,0.812" Grid.Row="0"/>
+        <StackPanel FocusManager.FocusedElement="{Binding ElementName=DatabaseUrlTextBox}" Grid.Row="0">
+            <TextBox x:Name="DatabaseUrlTextBox" HorizontalAlignment="Left" Text="{Binding DatabaseUrl, ValidatesOnExceptions=true, NotifyOnValidationError=true, UpdateSourceTrigger=PropertyChanged}" Height="22" Margin="10,32,0,12.4" TextWrapping="NoWrap" VerticalAlignment="Center" Width="255" MaxLines="1"/>
+        </StackPanel>
+        <TextBlock x:Name="LogLevelTextBlock" HorizontalAlignment="Left" Margin="270,10,0,0" TextWrapping="Wrap" Text="Log level" VerticalAlignment="Top" RenderTransformOrigin="0.174,0.439" Grid.Row="0"/>
+        <ComboBox x:Name="LogLevelComboBox" Text="{Binding LogLevel}" ItemsSource="{Binding Source={StaticResource DataFromLogLevelEnum}}" HorizontalAlignment="Left" Margin="270,32,0,0" VerticalAlignment="Top" Width="120" SelectedIndex="0" Grid.Row="0" BorderThickness="1">
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="SelectionChanged">
+                    <i:InvokeCommandAction Command="{Binding FilterLogsCommand}" CommandParameter="{Binding ElementName=LogLevelComboBox, Path=SelectedValue}"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </ComboBox>
+        <Button x:Name="ConnectButton" Content="Connect" Command="{Binding ConnectCommand}" IsEnabled="{Binding ConnectIsEnabled}" HorizontalAlignment="Left" Margin="395,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0"/>
+        <Button x:Name="DisconnectButton" Content="Disconnect" Command="{Binding DisconnectCommand}" IsEnabled="{Binding DisconnectIsEnabled}" HorizontalAlignment="Left" Margin="475,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0"/>
+        <Button x:Name="SaveToFileButton" Content="Save to file" Command="{Binding SaveToFileCommand}" HorizontalAlignment="Left" Margin="555,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0"/>
+        <Button x:Name="ClearButton" Content="Clear" Command="{Binding LogsClearCommand}" HorizontalAlignment="Left" Margin="635,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0"/>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="197*"/>
+                    <ColumnDefinition Width="707*"/>
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="LogTextBlock" TextWrapping="WrapWithOverflow" Background="Gainsboro" Margin="12,12,12,12" Padding="5,5,5,5" Text="{Binding FullLogText}" IsReadOnly="True" Grid.ColumnSpan="2"/>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</Window>
