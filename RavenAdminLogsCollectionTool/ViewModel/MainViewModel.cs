@@ -4,13 +4,15 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
-using System.Timers;
 using System.Windows.Input;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.CommandWpf;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using RavenAdminLogsCollectionTool.Model;
 using RavenAdminLogsCollectionTool.Services;
+using WebSocketSharp;
+using LogLevel = RavenAdminLogsCollectionTool.Model.LogLevel;
 
 namespace RavenAdminLogsCollectionTool.ViewModel
 {
@@ -20,7 +22,6 @@ namespace RavenAdminLogsCollectionTool.ViewModel
         private readonly IDialogService _dialogService;
         private readonly IFileSystemService _fileSystemService;
         private readonly IConfigurationService _configurationService;
-        private readonly Timer _logsTimer = new Timer();
         private readonly object _collectionLogsSyncObject = new object();
         private readonly List<LogInfo> _allLogs = new List<LogInfo>();
         private ObservableCollection<LogInfo> _logs = new ObservableCollection<LogInfo>();
@@ -37,7 +38,46 @@ namespace RavenAdminLogsCollectionTool.ViewModel
         private bool _connectIsEnabled = true;
         private bool _disconnectIsEnabled;
 
+        private readonly EventHandler _onWebSocketOpen;
+        private readonly EventHandler<CloseEventArgs> _onWebSocketClose;
+        private readonly EventHandler<MessageEventArgs> _onWebSocketReceiveMessage;
+        private readonly EventHandler<ErrorEventArgs> _onWebSocketError;
 
+
+        public MainViewModel(IRavenDbCommunicationService ravenDbCommunicationService, IDialogService dialogService,
+            IFileSystemService fileSystemService, IConfigurationService configurationService)
+        {
+            _ravenDbCommunicationService = ravenDbCommunicationService;
+            _dialogService = dialogService;
+            _fileSystemService = fileSystemService;
+            _configurationService = configurationService;
+            _onWebSocketReceiveMessage = (sender, args) => {
+                var jObject = JObject.Parse(args.Data);
+                if (jObject == null || (jObject["Type"] != null && jObject["Type"].ToString() == "Heartbeat"))
+                {
+                    return;
+                }
+                var logInfo = jObject.ToObject<LogInfo>();
+                lock (_collectionLogsSyncObject)
+                {
+                    if (logInfo.LogLevel >= LogLevel && logInfo.LoggerName.Contains(Category))
+                    {
+                        Logs.Add(logInfo);
+                    }
+                    _allLogs.Add(logInfo);
+                    Logs = Logs;
+                }
+            };
+            _onWebSocketClose = (sender, args) => {
+                DisconnectIsEnabled = false;
+                ConnectIsEnabled = true;
+            };
+            _onWebSocketError = (sender, args) => { _dialogService.ShowErrorMessage(args.Message); };
+            _onWebSocketOpen = (sender, args) => {
+                DisconnectIsEnabled = true;
+                ConnectIsEnabled = false;
+            };
+        }
 
         public string DatabaseUrl
         {
@@ -112,7 +152,7 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                     {
                         lock (_collectionLogsSyncObject)
                         {
-                            return Logs.Count != 0;
+                            return _allLogs.Count != 0;
                         }
                     }));
             }
@@ -125,13 +165,13 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                 return _connectCommand ?? (_connectCommand = new RelayCommand(async () =>
                     {
                         ConnectIsEnabled = false;
-                        DisconnectIsEnabled = true;
                         _configurationService.SetValue("DatabaseUrl", DatabaseUrl);
                         _configurationService.SetValue("Category", Category);
                         string message = await _ravenDbCommunicationService.ConfigureAdminLogsAsync(DatabaseUrl);
                         if (String.IsNullOrEmpty(message))
                         {
-                            var webSocketMessage = await _ravenDbCommunicationService.OpenWebSocketAsync(DatabaseUrl);
+                            var webSocketMessage = _ravenDbCommunicationService.OpenWebSocket(DatabaseUrl,
+                                _onWebSocketOpen, _onWebSocketClose, _onWebSocketReceiveMessage, _onWebSocketError);
                             if (!String.IsNullOrEmpty(webSocketMessage))
                             {
                                 _dialogService.ShowErrorMessage(webSocketMessage);
@@ -153,16 +193,15 @@ namespace RavenAdminLogsCollectionTool.ViewModel
         {
             get
             {
-                return _disconnectCommand ?? (_disconnectCommand = new RelayCommand(async () =>
+                return _disconnectCommand ?? (_disconnectCommand = new RelayCommand(() =>
                     {
-                        string message = await _ravenDbCommunicationService.CloseWebSocketAsync();
+                        DisconnectIsEnabled = false;
+                        string message = _ravenDbCommunicationService.CloseWebSocket();
                         if (!String.IsNullOrEmpty(message))
                         {
                             _dialogService.ShowErrorMessage(message);
                         }
-                        DisconnectIsEnabled = false;
-                        ConnectIsEnabled = true;
-                    }, () => DisconnectIsEnabled));
+                    }));
             }
         }
 
@@ -229,27 +268,6 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                 && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps));
         }
 
-        private void LogTimerCallback(object obj, ElapsedEventArgs args)
-        {
-            var newLogs = _ravenDbCommunicationService.GetNewLogsAndClear();
-            if (newLogs.Count == 0)
-            {
-                return;
-            }
-            lock (_collectionLogsSyncObject)
-            {
-                foreach (var log in newLogs)
-                {
-                    if (log.LogLevel >= LogLevel && log.LoggerName.Contains(Category))
-                    {
-                        Logs.Add(log);
-                    }
-                    _allLogs.Add(log);
-                }
-                Logs = Logs;
-            }
-        }
-
         private string LogsToString()
         {
             lock (_collectionLogsSyncObject)
@@ -265,28 +283,6 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                 }
                 return stringBuilder.ToString();
             }
-        }
-
-        public MainViewModel(IRavenDbCommunicationService ravenDbCommunicationService,
-            IDialogService dialogService, IFileSystemService fileSystemService, IConfigurationService configurationService)
-        {
-            _ravenDbCommunicationService = ravenDbCommunicationService;
-            _dialogService = dialogService;
-            _fileSystemService = fileSystemService;
-            _configurationService = configurationService;
-
-            _logsTimer.Interval = 5000;
-            _logsTimer.Elapsed += LogTimerCallback;
-            _logsTimer.AutoReset = true;
-            _logsTimer.Enabled = true;
-            _logsTimer.Start();
-        }
-
-        public override void Cleanup()
-        {
-            ((IDisposable) _ravenDbCommunicationService)?.Dispose();
-            _logsTimer?.Dispose();
-            base.Cleanup();
         }
     }
 }

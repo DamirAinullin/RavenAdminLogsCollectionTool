@@ -45,8 +45,8 @@
                 </i:EventTrigger>
             </i:Interaction.Triggers>
         </ComboBox>
-        <Button x:Name="ConnectButton" Content="Connect" Command="{Binding ConnectCommand}" IsEnabled="{Binding ConnectIsEnabled}" HorizontalAlignment="Left" Margin="537,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0"/>
-        <Button x:Name="DisconnectButton" Content="Disconnect" Command="{Binding DisconnectCommand}" IsEnabled="{Binding DisconnectIsEnabled}" HorizontalAlignment="Left" Margin="617,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0"/>
+        <Button x:Name="ConnectButton" Content="Connect" Command="{Binding ConnectCommand}" IsEnabled="{Binding ConnectIsEnabled, Mode=TwoWay}" HorizontalAlignment="Left" Margin="537,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0"/>
+        <Button x:Name="DisconnectButton" Content="Disconnect" Command="{Binding DisconnectCommand}" IsEnabled="{Binding DisconnectIsEnabled, Mode=TwoWay}" HorizontalAlignment="Left" Margin="617,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0"/>
         <Button x:Name="SaveToFileButton" Content="Save to file" Command="{Binding SaveToFileCommand}" HorizontalAlignment="Left" Margin="697,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0"/>
         <Button x:Name="ClearButton" Content="Clear" Command="{Binding LogsClearCommand}" HorizontalAlignment="Left" Margin="777,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0"/>
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">

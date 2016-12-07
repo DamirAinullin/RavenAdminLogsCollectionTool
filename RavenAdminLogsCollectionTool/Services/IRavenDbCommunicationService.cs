@@ -1,14 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Threading.Tasks;
-using RavenAdminLogsCollectionTool.Model;
+using WebSocketSharp;
 
 namespace RavenAdminLogsCollectionTool.Services
 {
     public interface IRavenDbCommunicationService
     {
         Task<string> ConfigureAdminLogsAsync(string databaseUrl);
-        Task<string> OpenWebSocketAsync(string databaseUrl);
-        Task<string> CloseWebSocketAsync();
-        IList<LogInfo> GetNewLogsAndClear();
+
+        string OpenWebSocket(string databaseUrl, EventHandler onOpen,
+            EventHandler<CloseEventArgs> onClose, EventHandler<MessageEventArgs> onMessage,
+            EventHandler<ErrorEventArgs> onError);
+
+        string CloseWebSocket();
     }
 }
