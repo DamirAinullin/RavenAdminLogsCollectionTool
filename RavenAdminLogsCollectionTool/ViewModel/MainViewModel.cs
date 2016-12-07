@@ -65,7 +65,6 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                         Logs.Add(logInfo);
                     }
                     _allLogs.Add(logInfo);
-                    Logs = Logs;
                 }
             };
             _onWebSocketClose = (sender, args) => {
@@ -76,6 +75,11 @@ namespace RavenAdminLogsCollectionTool.ViewModel
             _onWebSocketOpen = (sender, args) => {
                 DisconnectIsEnabled = true;
                 ConnectIsEnabled = false;
+            };
+            Logs.CollectionChanged += (sender, args) =>
+            {
+                Set(ref _logs, (ObservableCollection<LogInfo>)sender);
+                FullLogText = LogsToString();
             };
         }
 
@@ -145,7 +149,6 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                         lock (_collectionLogsSyncObject)
                         {
                             Logs.Clear();
-                            Logs = Logs;
                             _allLogs.Clear();
                         }
                     }, () =>
@@ -213,8 +216,13 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                     {
                         lock (_collectionLogsSyncObject)
                         {
-                            Logs = new ObservableCollection<LogInfo>(_allLogs.Where(
+                            var logs = new ObservableCollection<LogInfo>(_allLogs.Where(
                                 logInfo => logInfo.LogLevel >= selectedValue && logInfo.LoggerName.Contains(Category)));
+                            Logs.Clear();
+                            foreach (var log in logs)
+                            {
+                                Logs.Add(log);
+                            }
                         }
                     }));
             }
