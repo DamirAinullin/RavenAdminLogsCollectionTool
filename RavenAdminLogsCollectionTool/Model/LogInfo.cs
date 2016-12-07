@@ -30,7 +30,7 @@ namespace RavenAdminLogsCollectionTool.Model
 
         public override string ToString()
         {
-            string str = $"{TimeStamp};{LogLevel.ToString().ToUpper()};{Database};{LoggerName};{Message}{Exception ?? ""}\n";
+            string str = $"{TimeStamp};{LogLevel.ToString().ToUpper()};{Database};{LoggerName};{Message}{Exception ?? String.Empty}\n";
             if (!String.IsNullOrEmpty(StackTrace))
             {
                 str += StackTrace + "\n\n";

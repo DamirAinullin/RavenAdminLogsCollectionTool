@@ -2,7 +2,7 @@
 {
     public interface IConfigurationService
     {
-        string GetDatabaseUrl();
-        void SetDatabaseUrl(string databaseUrl);
+        string GetValue(string key);
+        void SetValue(string key, string value);
     }
 }

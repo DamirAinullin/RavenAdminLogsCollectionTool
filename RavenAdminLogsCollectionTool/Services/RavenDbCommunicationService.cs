@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using RavenAdminLogsCollectionTool.Helpers;
 using RavenAdminLogsCollectionTool.Model;
 
 namespace RavenAdminLogsCollectionTool.Services
@@ -18,6 +19,7 @@ namespace RavenAdminLogsCollectionTool.Services
         private static readonly object CollectionLogsSyncObject = new object();
         private const int ReceiveChunkSize = 16384;
         private readonly IList<LogInfo> _logs = new List<LogInfo>();
+        private readonly string _eventId = RandomIdGenerator.GenerateId();
         private ClientWebSocket _webSocket;
 
         public async Task<string> ConfigureAdminLogsAsync(string databaseUrl)
@@ -25,7 +27,7 @@ namespace RavenAdminLogsCollectionTool.Services
             string message = String.Empty;
             try
             {
-                string url = databaseUrl + @"/admin/logs/configure?watch-category=Raven.:Debug:no-watch-stack&id=123";
+                string url = $"{databaseUrl}/admin/logs/configure?watch-category=Raven.:Debug:no-watch-stack&id={_eventId}";
                 using (HttpClient httpClient = new HttpClient())
                 {
                     var response = await httpClient.GetAsync(url, CancellationToken.None);
@@ -54,7 +56,7 @@ namespace RavenAdminLogsCollectionTool.Services
             }
             catch (Exception ex)
             {
-                return ex.Message + $" Websocket close status: {_webSocket.CloseStatus}";
+                return $"{ ex.Message} Websocket close status: {_webSocket.CloseStatus}";
             }
             finally
             {
@@ -66,12 +68,10 @@ namespace RavenAdminLogsCollectionTool.Services
         {
             try
             {
-                if (_webSocket == null || _webSocket.State == WebSocketState.Closed || _webSocket.State == WebSocketState.Aborted ||
-                    _webSocket.State == WebSocketState.CloseSent || _webSocket.State == WebSocketState.CloseReceived)
+                if (_webSocket != null && _webSocket.State == WebSocketState.Open)
                 {
-                    return String.Empty;
+                    await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, String.Empty, CancellationToken.None);
                 }
-                await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, String.Empty, CancellationToken.None);
                 return String.Empty;
             }
             catch (Exception exception)
@@ -101,8 +101,8 @@ namespace RavenAdminLogsCollectionTool.Services
 
         private string BuildWebSocketUrl(string databaseUrl)
         {
-            Uri uri = new Uri(databaseUrl);
-            return $"ws://{uri.Host}:{uri.Port}/admin/logs/events?id=123";
+            var uri = new Uri(databaseUrl);
+            return $"ws://{uri.Host}:{uri.Port}/admin/logs/events?id={_eventId}";
         }
 
         private async Task ReceiveData(ClientWebSocket webSocket)
@@ -111,9 +111,9 @@ namespace RavenAdminLogsCollectionTool.Services
             while (webSocket.State == WebSocketState.Open)
             {
                 var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-                if (result.MessageType == WebSocketMessageType.Close)
+                if (result.MessageType == WebSocketMessageType.Close || webSocket.State == WebSocketState.CloseReceived)
                 {
-                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, String.Empty, CancellationToken.None);
+                    await webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, String.Empty, CancellationToken.None);
                 }
                 else
                 {

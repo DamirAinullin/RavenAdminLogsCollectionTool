@@ -4,15 +4,15 @@ namespace RavenAdminLogsCollectionTool.Services
 {
     public class ConfigurationService : IConfigurationService
     {
-        public string GetDatabaseUrl()
+        public string GetValue(string key)
         {
-            return ConfigurationManager.AppSettings["DatabaseUrl"];
+            return ConfigurationManager.AppSettings[key];
         }
 
-        public void SetDatabaseUrl(string databaseUrl)
+        public void SetValue(string key, string value)
         {
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            config.AppSettings.Settings["DatabaseUrl"].Value = databaseUrl;
+            config.AppSettings.Settings["DatabaseUrl"].Value = value;
             config.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection("appSettings");
         }

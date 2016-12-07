@@ -25,16 +25,19 @@ namespace RavenAdminLogsCollectionTool.ViewModel
         private readonly List<LogInfo> _allLogs = new List<LogInfo>();
         private ObservableCollection<LogInfo> _logs = new ObservableCollection<LogInfo>();
         private string _fullLogText = string.Empty;
-        private string _databaseUrl = string.Empty;
+        private string _databaseUrl;
+        private string _category;
         private ICommand _logsClearCommand;
         private ICommand _saveToFileCommand;
         private ICommand _connectCommand;
+        private ICommand _disconnectCommand;
+        private ICommand _windowLoadedCommand;
+        private ICommand _filterLogsCommand;
         private LogLevel _logLevel;
         private bool _connectIsEnabled = true;
         private bool _disconnectIsEnabled;
-        private ICommand _filterLogsCommand;
-        private RelayCommand _disconnectCommand;
-        private RelayCommand _windowLoadedCommand;
+
+
 
         public string DatabaseUrl
         {
@@ -46,6 +49,16 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                 {
                     throw new ValidationException("Invalid URL");
                 }
+            }
+        }
+
+        public string Category
+        {
+            get { return _category; }
+            set
+            {
+                Set(ref _category, value);
+                FilterLogsCommand.Execute(null);
             }
         }
 
@@ -113,7 +126,8 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                     {
                         ConnectIsEnabled = false;
                         DisconnectIsEnabled = true;
-                        _configurationService.SetDatabaseUrl(DatabaseUrl);
+                        _configurationService.SetValue("DatabaseUrl", DatabaseUrl);
+                        _configurationService.SetValue("Category", Category);
                         string message = await _ravenDbCommunicationService.ConfigureAdminLogsAsync(DatabaseUrl);
                         if (String.IsNullOrEmpty(message))
                         {
@@ -160,7 +174,8 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                     {
                         lock (_collectionLogsSyncObject)
                         {
-                            Logs = new ObservableCollection<LogInfo>(_allLogs.Where(logInfo => logInfo.LogLevel >= selectedValue));
+                            Logs = new ObservableCollection<LogInfo>(_allLogs.Where(
+                                logInfo => logInfo.LogLevel >= selectedValue && logInfo.LoggerName.Contains(Category)));
                         }
                     }));
             }
@@ -193,10 +208,15 @@ namespace RavenAdminLogsCollectionTool.ViewModel
             {
                 return _windowLoadedCommand ?? (_windowLoadedCommand = new RelayCommand(() =>
                     {
-                        string url = _configurationService.GetDatabaseUrl();
+                        string url = _configurationService.GetValue("DatabaseUrl");
+                        string category = _configurationService.GetValue("Category");
                         if (!String.IsNullOrEmpty(url))
                         {
                             DatabaseUrl = url;
+                        }
+                        if (!String.IsNullOrEmpty(category))
+                        {
+                            Category = category;
                         }
                     }));
             }
@@ -220,7 +240,7 @@ namespace RavenAdminLogsCollectionTool.ViewModel
             {
                 foreach (var log in newLogs)
                 {
-                    if (log.LogLevel >= LogLevel)
+                    if (log.LogLevel >= LogLevel && log.LoggerName.Contains(Category))
                     {
                         Logs.Add(log);
                     }

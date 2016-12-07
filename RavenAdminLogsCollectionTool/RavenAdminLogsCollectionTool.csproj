@@ -85,7 +85,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Model\DataItem.cs" />
     <Compile Include="Model\LogLevel.cs" />
     <Compile Include="Services\ConfigurationService.cs" />
     <Compile Include="Services\DialogService.cs" />
@@ -96,6 +95,7 @@
     <Compile Include="Services\IRavenDbCommunicationService.cs" />
     <Compile Include="Model\LogInfo.cs" />
     <Compile Include="Services\RavenDbCommunicationService.cs" />
+    <Compile Include="Helpers\RandomIdGenerator.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Page Include="MainWindow.xaml">
@@ -143,9 +143,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Design\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Resource Include="favicon.ico" />
   </ItemGroup>
