@@ -1,0 +1,13 @@
+configuration: Release
+
+before_build:
+  - nuget restore RavenAdminLogsCollectionTool.sln
+
+build:
+  project: RavenAdminLogsCollectionTool.sln
+  verbosity: normal
+
+test:
+  assemblies:
+  - RavenAdminLogsCollectionTool.dll
+  - RavenAdminLogsCollectionToolTests.dll
