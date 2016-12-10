@@ -23,7 +23,6 @@ namespace RavenAdminLogsCollectionTool.ViewModel
         private readonly IFileSystemService _fileSystemService;
         private readonly IConfigurationService _configurationService;
         private readonly object _collectionLogsSyncObject = new object();
-        private readonly List<LogInfo> _allLogs = new List<LogInfo>();
         private ObservableCollection<LogInfo> _logs = new ObservableCollection<LogInfo>();
         private string _fullLogText = string.Empty;
         private string _databaseUrl;
@@ -64,7 +63,7 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                     {
                         Logs.Add(logInfo);
                     }
-                    _allLogs.Add(logInfo);
+                    AllLogs.Add(logInfo);
                 }
             };
             _onWebSocketClose = (sender, args) => {
@@ -140,6 +139,8 @@ namespace RavenAdminLogsCollectionTool.ViewModel
             }
         }
 
+        public List<LogInfo> AllLogs { get; set; } = new List<LogInfo>();
+
         public ICommand LogsClearCommand
         {
             get
@@ -149,13 +150,13 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                         lock (_collectionLogsSyncObject)
                         {
                             Logs.Clear();
-                            _allLogs.Clear();
+                            AllLogs.Clear();
                         }
                     }, () =>
                     {
                         lock (_collectionLogsSyncObject)
                         {
-                            return _allLogs.Count != 0;
+                            return AllLogs.Count != 0;
                         }
                     }));
             }
@@ -177,7 +178,7 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                                 _onWebSocketOpen, _onWebSocketClose, _onWebSocketReceiveMessage, _onWebSocketError);
                             if (!String.IsNullOrEmpty(webSocketMessage))
                             {
-                                _dialogService.ShowErrorMessage(webSocketMessage);
+                                _dialogService.ShowErrorMessage("Websocket error has occurred. " + webSocketMessage);
                                 ConnectIsEnabled = true;
                                 DisconnectIsEnabled = false;
                             }
@@ -216,7 +217,7 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                     {
                         lock (_collectionLogsSyncObject)
                         {
-                            var logs = new ObservableCollection<LogInfo>(_allLogs.Where(
+                            var logs = new ObservableCollection<LogInfo>(AllLogs.Where(
                                 logInfo => logInfo.LogLevel >= selectedValue && logInfo.LoggerName.Contains(Category)));
                             Logs.Clear();
                             foreach (var log in logs)

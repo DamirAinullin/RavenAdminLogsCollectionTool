@@ -4,22 +4,6 @@ namespace RavenAdminLogsCollectionTool.Model
 {
     public class LogInfo
     {
-        public LogInfo()
-        {
-        }
-
-        public LogInfo(LogLevel logLevel, string database, string timeStamp, string message,
-            string loggerName, string exception, string stackTrace)
-        {
-            LogLevel = logLevel;
-            Database = database;
-            TimeStamp = timeStamp;
-            Message = message;
-            LoggerName = loggerName;
-            Exception = exception;
-            StackTrace = stackTrace;
-        }
-
         public LogLevel LogLevel { get; set; }
         public string Database { get; set; }
         public string TimeStamp { get; set; }
