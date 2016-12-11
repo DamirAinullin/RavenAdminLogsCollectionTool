@@ -203,7 +203,7 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                         string message = _ravenDbCommunicationService.CloseWebSocket();
                         if (!String.IsNullOrEmpty(message))
                         {
-                            _dialogService.ShowErrorMessage(message);
+                            _dialogService.ShowErrorMessage("Websocket error has occurred. " + message);
                         }
                     }));
             }
