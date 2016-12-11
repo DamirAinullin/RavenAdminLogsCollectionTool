@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using Moq;
 using NUnit.Framework;
 using RavenAdminLogsCollectionTool.Model;
@@ -6,9 +7,8 @@ using RavenAdminLogsCollectionTool.Services;
 using RavenAdminLogsCollectionTool.ViewModel;
 using WebSocketSharp;
 using LogLevel = RavenAdminLogsCollectionTool.Model.LogLevel;
-using System.ComponentModel.DataAnnotations;
 
-namespace RavenAdminLogsCollectionToolTests
+namespace RavenAdminLogsCollectionToolTests.ViewModel
 {
     [TestFixture]
     public class MainViewModelTests
