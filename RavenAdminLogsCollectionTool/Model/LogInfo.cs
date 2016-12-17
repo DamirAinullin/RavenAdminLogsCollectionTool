@@ -1,10 +1,13 @@
 ﻿using System;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace RavenAdminLogsCollectionTool.Model
 {
     public class LogInfo
     {
-        public LogLevel LogLevel { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public LogLevel Level { get; set; }
         public string Database { get; set; }
         public string TimeStamp { get; set; }
         public string Message { get; set; }
@@ -14,7 +17,7 @@ namespace RavenAdminLogsCollectionTool.Model
 
         public override string ToString()
         {
-            string str = $"{TimeStamp};{LogLevel.ToString().ToUpper()};{Database};{LoggerName};{Message}{Exception ?? String.Empty}\n";
+            string str = $"{TimeStamp};{Level.ToString().ToUpper()};{Database};{LoggerName};{Message}{Exception ?? String.Empty}\n";
             if (!String.IsNullOrEmpty(StackTrace))
             {
                 str += StackTrace + "\n\n";

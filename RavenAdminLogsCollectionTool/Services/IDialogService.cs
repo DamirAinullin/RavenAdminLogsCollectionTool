@@ -2,7 +2,7 @@
 {
     public interface IDialogService
     {
-        void ShowErrorMessage(string message);
-        bool? ShowSaveFileDialog(out string fileName);
+        void ShowMessage(string message, string caption = "Information");
+        void ShowErrorMessage(string message, string caption = "Error");
     }
 }

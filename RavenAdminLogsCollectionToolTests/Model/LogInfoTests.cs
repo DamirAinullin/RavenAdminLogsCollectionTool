@@ -11,7 +11,7 @@ namespace RavenAdminLogsCollectionToolTests.Model
         {
             var logInfo = new LogInfo
             {
-                LogLevel = LogLevel.Debug,
+                Level = LogLevel.Debug,
                 Database = "Database",
                 Exception = "Exception",
                 LoggerName = "LoggerName",

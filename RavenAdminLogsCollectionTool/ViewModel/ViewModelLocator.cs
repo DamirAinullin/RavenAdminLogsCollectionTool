@@ -11,6 +11,7 @@ namespace RavenAdminLogsCollectionTool.ViewModel
         {
             ServiceLocator.SetLocatorProvider(() => SimpleIoc.Default);
 
+            SimpleIoc.Default.Register<ILogService, LogService>();
             SimpleIoc.Default.Register<IRavenDbCommunicationService, RavenDbCommunicationService>();
             SimpleIoc.Default.Register<IDialogService, DialogService>();
             SimpleIoc.Default.Register<IFileSystemService, FileSystemService>();

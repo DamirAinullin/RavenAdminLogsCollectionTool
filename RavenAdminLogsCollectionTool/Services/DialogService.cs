@@ -1,31 +1,17 @@
-﻿using System;
-using System.Windows;
-using Microsoft.Win32;
+﻿using System.Windows;
 
 namespace RavenAdminLogsCollectionTool.Services
 {
     public class DialogService : IDialogService
     {
-        public void ShowErrorMessage(string message)
+        public void ShowMessage(string message, string caption = "Information")
         {
-            MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(message, caption, MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        public bool? ShowSaveFileDialog(out string fileName)
+        public void ShowErrorMessage(string message, string caption = "Error")
         {
-            var dlg = new SaveFileDialog
-            {
-                FileName = "logs",
-                DefaultExt = ".json",
-                Filter = "Json documents (.json)|*.json"
-            };
-            if (dlg.ShowDialog() == true)
-            {
-                fileName = dlg.FileName;
-                return true;
-            }
-            fileName = String.Empty;
-            return false;
+            MessageBox.Show(message, caption, MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 }

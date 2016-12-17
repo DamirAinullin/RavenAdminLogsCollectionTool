@@ -7,9 +7,11 @@
         xmlns:system="clr-namespace:System;assembly=mscorlib"
         xmlns:model="clr-namespace:RavenAdminLogsCollectionTool.Model"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:helpers="clr-namespace:RavenAdminLogsCollectionTool.Helpers"
         mc:Ignorable="d ignore"
+        WindowStartupLocation="CenterScreen"
         Height="580"
-        Width="910.4"
+        Width="955.2"
         Title="RavenDB admin logs collection tool"
         DataContext="{Binding Main, Source={StaticResource Locator}}">
     <Window.Resources>
@@ -47,9 +49,13 @@
         </ComboBox>
         <Button x:Name="ConnectButton" Content="Connect" Command="{Binding ConnectCommand}" IsEnabled="{Binding ConnectIsEnabled, Mode=TwoWay}" HorizontalAlignment="Left" Margin="537,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0"/>
         <Button x:Name="DisconnectButton" Content="Disconnect" Command="{Binding DisconnectCommand}" IsEnabled="{Binding DisconnectIsEnabled, Mode=TwoWay}" HorizontalAlignment="Left" Margin="617,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0"/>
-        <Button x:Name="SaveToFileButton" Content="Save to file" Command="{Binding SaveToFileCommand}" HorizontalAlignment="Left" Margin="697,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0"/>
-        <Button x:Name="ClearButton" Content="Clear" Command="{Binding LogsClearCommand}" HorizontalAlignment="Left" Margin="777,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0"/>
+        <ToggleButton x:Name="KeepDownButton" Content="Keep Down" Command="{Binding KeepDownCommand}" CommandParameter="{Binding IsChecked,RelativeSource={RelativeSource Self}}" IsChecked="{Binding IsAutoScrollEnabled}" HorizontalAlignment="Left" Margin="697,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0" RenderTransformOrigin="1.475,0.509"/>
+        <Button x:Name="ClearButton" Content="Clear" Command="{Binding LogsClearCommand}" HorizontalAlignment="Left" Margin="777,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0" RenderTransformOrigin="-0.173,0.591"/>
+        <Button x:Name="SaveToFileButton" Content="Export" Command="{Binding ExportCommand}" HorizontalAlignment="Left" Margin="857,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0" RenderTransformOrigin="0.227,0.436"/>
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+            <i:Interaction.Behaviors>
+                <helpers:AutoScrollBehavior />
+            </i:Interaction.Behaviors>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="197*"/>

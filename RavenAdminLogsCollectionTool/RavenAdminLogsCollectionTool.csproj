@@ -89,6 +89,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Helpers\AutoScrollBehavior.cs" />
     <Compile Include="Model\LogLevel.cs" />
     <Compile Include="Services\ConfigurationService.cs" />
     <Compile Include="Services\DialogService.cs" />
@@ -96,8 +97,10 @@
     <Compile Include="Services\IDialogService.cs" />
     <Compile Include="Services\FileSystemService.cs" />
     <Compile Include="Services\IFileSystemService.cs" />
+    <Compile Include="Services\ILogService.cs" />
     <Compile Include="Services\IRavenDbCommunicationService.cs" />
     <Compile Include="Model\LogInfo.cs" />
+    <Compile Include="Services\LogService.cs" />
     <Compile Include="Services\RavenDbCommunicationService.cs" />
     <Compile Include="Helpers\RandomIdGenerator.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
