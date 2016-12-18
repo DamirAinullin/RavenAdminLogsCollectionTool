@@ -74,6 +74,7 @@
   <ItemGroup>
     <Compile Include="Helpers\RandomIdGeneratorTests.cs" />
     <Compile Include="Model\LogInfoTests.cs" />
+    <Compile Include="Service\LogServiceTests.cs" />
     <Compile Include="ViewModel\MainViewModelTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

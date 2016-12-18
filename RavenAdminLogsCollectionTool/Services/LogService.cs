@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using GalaSoft.MvvmLight.Messaging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using RavenAdminLogsCollectionTool.Messages;
 using RavenAdminLogsCollectionTool.Model;
 using WebSocketSharp;
 using LogLevel = RavenAdminLogsCollectionTool.Model.LogLevel;
@@ -21,6 +22,9 @@ namespace RavenAdminLogsCollectionTool.Services
         private ObservableCollection<LogInfo> _logs = new ObservableCollection<LogInfo>();
         private readonly List<LogInfo> _allLogs = new List<LogInfo>();
 
+        public LogLevel LogLevel { get; set; } = LogLevel.Debug;
+        public string Category { get; set; } = "Raven.";
+
         public LogService(IRavenDbCommunicationService ravenDbCommunicationService)
         {
             _ravenDbCommunicationService = ravenDbCommunicationService;
@@ -31,26 +35,13 @@ namespace RavenAdminLogsCollectionTool.Services
             };
         }
 
-        public async Task<string> Connect(string databaseUrl, string category, LogLevel logLevel)
+        public async Task<string> Connect(string databaseUrl)
         {
             string errorMessage = await _ravenDbCommunicationService.ConfigureAdminLogsAsync(databaseUrl);
             if (String.IsNullOrEmpty(errorMessage))
             {
                 EventHandler<MessageEventArgs> onWebSocketReceiveMessage = (sender, args) => {
-                    var jObject = JObject.Parse(args.Data);
-                    if (jObject == null || (jObject["Type"] != null && jObject["Type"].ToString() == "Heartbeat"))
-                    {
-                        return;
-                    }
-                    var logInfo = jObject.ToObject<LogInfo>();
-                    lock (_collectionLogsSyncObject)
-                    {
-                        if (logInfo.Level >= logLevel && logInfo.LoggerName.Contains(category))
-                        {
-                            _logs.Add(logInfo);
-                        }
-                        _allLogs.Add(logInfo);
-                    }
+                    OnWebSocketReceiveMessage(args);
                 };
                 EventHandler<CloseEventArgs> onWebSocketClose = (sender, args) => {
                     Messenger.Default.Send(new CloseWebSocketMessage());
@@ -118,6 +109,24 @@ namespace RavenAdminLogsCollectionTool.Services
             return JsonConvert.SerializeObject(_logs, Formatting.Indented);
         }
 
+        private void OnWebSocketReceiveMessage(MessageEventArgs args)
+        {
+            var jObject = JObject.Parse(args.Data);
+            if (jObject == null || (jObject["Type"] != null && jObject["Type"].ToString() == "Heartbeat"))
+            {
+                return;
+            }
+            var logInfo = jObject.ToObject<LogInfo>();
+            lock (_collectionLogsSyncObject)
+            {
+                if (logInfo.Level >= LogLevel && logInfo.LoggerName.Contains(Category))
+                {
+                    _logs.Add(logInfo);
+                }
+                _allLogs.Add(logInfo);
+            }
+        }
+
         private string LogsToString()
         {
             lock (_collectionLogsSyncObject)
@@ -134,23 +143,5 @@ namespace RavenAdminLogsCollectionTool.Services
                 return stringBuilder.ToString();
             }
         }
-    }
-
-    public class LogsMessage
-    {
-        public string FullLogText { get; set; }
-    }
-
-    public class ErrorWebSocketMessage
-    {
-        public string ErrorMessage { get; set; }
-    }
-
-    public class OpenWebSocketMessage
-    {
-    }
-
-    public class CloseWebSocketMessage
-    {
     }
 }

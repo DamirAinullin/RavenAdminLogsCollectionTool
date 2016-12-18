@@ -91,8 +91,10 @@
     </ApplicationDefinition>
     <Compile Include="Helpers\AutoScrollBehavior.cs" />
     <Compile Include="Model\LogLevel.cs" />
+    <Compile Include="Messages\CloseWebSocketMessage.cs" />
     <Compile Include="Services\ConfigurationService.cs" />
     <Compile Include="Services\DialogService.cs" />
+    <Compile Include="Messages\ErrorWebSocketMessage.cs" />
     <Compile Include="Services\IConfigurationService.cs" />
     <Compile Include="Services\IDialogService.cs" />
     <Compile Include="Services\FileSystemService.cs" />
@@ -101,6 +103,8 @@
     <Compile Include="Services\IRavenDbCommunicationService.cs" />
     <Compile Include="Model\LogInfo.cs" />
     <Compile Include="Services\LogService.cs" />
+    <Compile Include="Messages\LogsMessage.cs" />
+    <Compile Include="Messages\OpenWebSocketMessage.cs" />
     <Compile Include="Services\RavenDbCommunicationService.cs" />
     <Compile Include="Helpers\RandomIdGenerator.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />

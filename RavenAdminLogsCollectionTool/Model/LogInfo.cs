@@ -9,7 +9,7 @@ namespace RavenAdminLogsCollectionTool.Model
         [JsonConverter(typeof(StringEnumConverter))]
         public LogLevel Level { get; set; }
         public string Database { get; set; }
-        public string TimeStamp { get; set; }
+        public DateTime TimeStamp { get; set; }
         public string Message { get; set; }
         public string LoggerName { get; set; }
         public string Exception { get; set; }
@@ -17,7 +17,7 @@ namespace RavenAdminLogsCollectionTool.Model
 
         public override string ToString()
         {
-            string str = $"{TimeStamp};{Level.ToString().ToUpper()};{Database};{LoggerName};{Message}{Exception ?? String.Empty}\n";
+            string str = $"{TimeStamp:o};{Level.ToString().ToUpper()};{Database};{LoggerName};{Message}{Exception ?? String.Empty}\n";
             if (!String.IsNullOrEmpty(StackTrace))
             {
                 str += StackTrace + "\n\n";

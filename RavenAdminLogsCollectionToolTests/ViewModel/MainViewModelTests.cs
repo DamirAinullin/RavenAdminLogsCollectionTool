@@ -48,7 +48,7 @@ namespace RavenAdminLogsCollectionToolTests.ViewModel
         public void ConnectCommandTest()
         {
             _configurationServiceMock.Setup(m => m.SetValue(It.IsAny<string>(), It.IsAny<string>()));
-            _logServiceMock.Setup(m => m.Connect(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<LogLevel>()))
+            _logServiceMock.Setup(m => m.Connect(It.IsAny<string>()))
                 .ReturnsAsync(String.Empty);
 
             var mainViewModel = new MainViewModel(_logServiceMock.Object, _dialogServiceMock.Object,
@@ -72,7 +72,7 @@ namespace RavenAdminLogsCollectionToolTests.ViewModel
 
             Assert.IsFalse(mainViewModel.ConnectIsEnabled);
             _configurationServiceMock.Verify(m => m.SetValue(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(2));
-            _logServiceMock.Verify(m => m.Connect("http://localhost:8080", "Category", LogLevel.Debug), Times.Once());
+            _logServiceMock.Verify(m => m.Connect("http://localhost:8080"), Times.Once());
             _dialogServiceMock.Verify(m => m.ShowErrorMessage(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
         
@@ -80,7 +80,7 @@ namespace RavenAdminLogsCollectionToolTests.ViewModel
         public void ConnectCommandShowErrorMessageIfConnectMessageIsNotEmptyTest()
         {
             _configurationServiceMock.Setup(m => m.SetValue(It.IsAny<string>(), It.IsAny<string>()));
-            _logServiceMock.Setup(m => m.Connect(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<LogLevel>()))
+            _logServiceMock.Setup(m => m.Connect(It.IsAny<string>()))
                 .ReturnsAsync("Something wrong happened");
 
             var mainViewModel = new MainViewModel(_logServiceMock.Object, _dialogServiceMock.Object,
@@ -94,7 +94,7 @@ namespace RavenAdminLogsCollectionToolTests.ViewModel
             mainViewModel.ConnectCommand.Execute(null);
 
             _configurationServiceMock.Verify(m => m.SetValue(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(2));
-            _logServiceMock.Verify(m => m.Connect("http://localhost:8080", "Category", LogLevel.Debug), Times.Once);
+            _logServiceMock.Verify(m => m.Connect("http://localhost:8080"), Times.Once);
 
             _dialogServiceMock.Verify(m => m.ShowErrorMessage("Network error has occurred. Something wrong happened", "Error"), Times.Once);
             Assert.IsTrue(mainViewModel.ConnectIsEnabled);

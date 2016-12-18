@@ -5,6 +5,7 @@ using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.CommandWpf;
 using GalaSoft.MvvmLight.Messaging;
 using RavenAdminLogsCollectionTool.Helpers;
+using RavenAdminLogsCollectionTool.Messages;
 using RavenAdminLogsCollectionTool.Services;
 using LogLevel = RavenAdminLogsCollectionTool.Model.LogLevel;
 
@@ -77,6 +78,7 @@ namespace RavenAdminLogsCollectionTool.ViewModel
             set
             {
                 Set(ref _category, value);
+                _logService.Category = _category;
                 FilterLogsCommand.Execute(null);
             }
         }
@@ -96,7 +98,11 @@ namespace RavenAdminLogsCollectionTool.ViewModel
         public LogLevel LogLevel
         {
             get { return _logLevel; }
-            set { Set(ref _logLevel, value); }
+            set
+            {
+                Set(ref _logLevel, value);
+                _logService.LogLevel = _logLevel;
+            }
         }
 
         public string FullLogText
@@ -131,7 +137,7 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                         ConnectIsEnabled = false;
                         _configurationService.SetValue("DatabaseUrl", DatabaseUrl);
                         _configurationService.SetValue("Category", Category);
-                        string message = await _logService.Connect(DatabaseUrl, Category, LogLevel);
+                        string message = await _logService.Connect(DatabaseUrl);
                         if (!String.IsNullOrEmpty(message))
                         {
                             ConnectIsEnabled = true;

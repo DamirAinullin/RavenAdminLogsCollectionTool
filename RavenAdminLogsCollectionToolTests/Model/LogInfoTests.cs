@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 using RavenAdminLogsCollectionTool.Model;
 
 namespace RavenAdminLogsCollectionToolTests.Model
@@ -17,9 +18,9 @@ namespace RavenAdminLogsCollectionToolTests.Model
                 LoggerName = "LoggerName",
                 Message = "Message",
                 StackTrace = "StackTrace",
-                TimeStamp = "TimeStamp"
+                TimeStamp = DateTime.Parse("2016-12-18T19:27:33.7743417Z").ToUniversalTime()
             };
-            Assert.AreEqual("TimeStamp;DEBUG;Database;LoggerName;MessageException\nStackTrace\n\n", logInfo.ToString());
+            Assert.AreEqual("2016-12-18T19:27:33.7743417Z;DEBUG;Database;LoggerName;MessageException\nStackTrace\n\n", logInfo.ToString());
         }
     }
 }
