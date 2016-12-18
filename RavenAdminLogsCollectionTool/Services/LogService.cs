@@ -4,7 +4,9 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using GalaSoft.MvvmLight.Messaging;
+using GalaSoft.MvvmLight.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RavenAdminLogsCollectionTool.Messages;
@@ -125,6 +127,7 @@ namespace RavenAdminLogsCollectionTool.Services
                 }
                 _allLogs.Add(logInfo);
             }
+            DispatcherHelper.CheckBeginInvokeOnUI(CommandManager.InvalidateRequerySuggested);
         }
 
         private string LogsToString()

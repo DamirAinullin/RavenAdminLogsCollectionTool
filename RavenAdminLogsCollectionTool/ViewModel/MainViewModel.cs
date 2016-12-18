@@ -208,7 +208,7 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                         bool isAutoScrollEnabled;
                         if (Boolean.TryParse(isAutoScrollEnabledStr, out isAutoScrollEnabled))
                         {
-                            IsAutoScrollEnabled = isAutoScrollEnabled;
+                            IsAutoScrollEnabled = AutoScrollBehavior.IsEnabled = isAutoScrollEnabled;
                         }
                     }));
             }
