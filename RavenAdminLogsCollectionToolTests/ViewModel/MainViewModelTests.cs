@@ -48,7 +48,7 @@ namespace RavenAdminLogsCollectionToolTests.ViewModel
         public void ConnectCommandTest()
         {
             _configurationServiceMock.Setup(m => m.SetValue(It.IsAny<string>(), It.IsAny<string>()));
-            _logServiceMock.Setup(m => m.Connect(It.IsAny<string>()))
+            _logServiceMock.Setup(m => m.ConnectAsync(It.IsAny<string>()))
                 .ReturnsAsync(String.Empty);
 
             var mainViewModel = new MainViewModel(_logServiceMock.Object, _dialogServiceMock.Object,
@@ -72,7 +72,7 @@ namespace RavenAdminLogsCollectionToolTests.ViewModel
 
             Assert.IsFalse(mainViewModel.ConnectIsEnabled);
             _configurationServiceMock.Verify(m => m.SetValue(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(2));
-            _logServiceMock.Verify(m => m.Connect("http://localhost:8080"), Times.Once());
+            _logServiceMock.Verify(m => m.ConnectAsync("http://localhost:8080"), Times.Once());
             _dialogServiceMock.Verify(m => m.ShowErrorMessage(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
         
@@ -80,8 +80,8 @@ namespace RavenAdminLogsCollectionToolTests.ViewModel
         public void ConnectCommandShowErrorMessageIfConnectMessageIsNotEmptyTest()
         {
             _configurationServiceMock.Setup(m => m.SetValue(It.IsAny<string>(), It.IsAny<string>()));
-            _logServiceMock.Setup(m => m.Connect(It.IsAny<string>()))
-                .ReturnsAsync("Something wrong happened");
+            _logServiceMock.Setup(m => m.ConnectAsync(It.IsAny<string>()))
+                .Throws(new Exception("Something wrong happened"));
 
             var mainViewModel = new MainViewModel(_logServiceMock.Object, _dialogServiceMock.Object,
                 _fileSystemServiceMock.Object, _configurationServiceMock.Object)
@@ -94,7 +94,7 @@ namespace RavenAdminLogsCollectionToolTests.ViewModel
             mainViewModel.ConnectCommand.Execute(null);
 
             _configurationServiceMock.Verify(m => m.SetValue(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(2));
-            _logServiceMock.Verify(m => m.Connect("http://localhost:8080"), Times.Once);
+            _logServiceMock.Verify(m => m.ConnectAsync("http://localhost:8080"), Times.Once);
 
             _dialogServiceMock.Verify(m => m.ShowErrorMessage("Network error has occurred. Something wrong happened", "Error"), Times.Once);
             Assert.IsTrue(mainViewModel.ConnectIsEnabled);
@@ -104,7 +104,7 @@ namespace RavenAdminLogsCollectionToolTests.ViewModel
         [Test]
         public void DiconnectCommandTest()
         {
-            _logServiceMock.Setup(m => m.Disconnect()).Returns(String.Empty);
+            _logServiceMock.Setup(m => m.Disconnect());
             var mainViewModel = new MainViewModel(_logServiceMock.Object, _dialogServiceMock.Object,
                 _fileSystemServiceMock.Object, _configurationServiceMock.Object);
 
@@ -120,7 +120,7 @@ namespace RavenAdminLogsCollectionToolTests.ViewModel
         [Test]
         public void DiconnectCommandShowErrorMessageIfOpenWebSocketMessageIsNotEmptyTest()
         {
-            _logServiceMock.Setup(m => m.Disconnect()).Returns("Something wrong happened");
+            _logServiceMock.Setup(m => m.Disconnect()).Throws(new Exception("Something wrong happened"));
             var mainViewModel = new MainViewModel(_logServiceMock.Object, _dialogServiceMock.Object,
                 _fileSystemServiceMock.Object, _configurationServiceMock.Object);
 

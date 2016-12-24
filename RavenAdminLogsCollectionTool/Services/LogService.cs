@@ -21,7 +21,7 @@ namespace RavenAdminLogsCollectionTool.Services
     {
         private readonly IRavenDbCommunicationService _ravenDbCommunicationService;
         private readonly object _collectionLogsSyncObject = new object();
-        private ObservableCollection<LogInfo> _logs = new ObservableCollection<LogInfo>();
+        private ObservableCollection<LogInfo> _filterLogs = new ObservableCollection<LogInfo>();
         private readonly List<LogInfo> _allLogs = new List<LogInfo>();
 
         public LogLevel LogLevel { get; set; } = LogLevel.Debug;
@@ -30,48 +30,43 @@ namespace RavenAdminLogsCollectionTool.Services
         public LogService(IRavenDbCommunicationService ravenDbCommunicationService)
         {
             _ravenDbCommunicationService = ravenDbCommunicationService;
-            _logs.CollectionChanged += (sender, args) =>
+            _filterLogs.CollectionChanged += (sender, args) =>
             {
-                _logs = (ObservableCollection<LogInfo>)sender;
+                _filterLogs = (ObservableCollection<LogInfo>)sender;
                 Messenger.Default.Send(new LogsMessage{ FullLogText = LogsToString() });
             };
         }
 
-        public async Task<string> Connect(string databaseUrl)
+        public async Task<string> ConnectAsync(string databaseUrl)
         {
-            string errorMessage = await _ravenDbCommunicationService.ConfigureAdminLogsAsync(databaseUrl);
-            if (String.IsNullOrEmpty(errorMessage))
+            EventHandler onWebSocketOpen = (sender, args) =>
             {
-                EventHandler<MessageEventArgs> onWebSocketReceiveMessage = (sender, args) => {
-                    OnWebSocketReceiveMessage(args);
-                };
-                EventHandler<CloseEventArgs> onWebSocketClose = (sender, args) => {
-                    Messenger.Default.Send(new CloseWebSocketMessage());
-                };
-                EventHandler<ErrorEventArgs> onWebSocketError = (sender, args) =>
-                {
-                    Messenger.Default.Send(new ErrorWebSocketMessage { ErrorMessage = args.Message });
-                };
-                EventHandler onWebSocketOpen = (sender, args) =>
-                {
-                    Messenger.Default.Send(new OpenWebSocketMessage());
-                };
-                errorMessage = _ravenDbCommunicationService.OpenWebSocket(databaseUrl,
-                    onWebSocketOpen, onWebSocketClose, onWebSocketReceiveMessage, onWebSocketError);
-            }
-            return errorMessage;
+                Messenger.Default.Send(new OpenWebSocketMessage());
+            };
+            EventHandler<CloseEventArgs> onWebSocketClose = (sender, args) => {
+                Messenger.Default.Send(new CloseWebSocketMessage());
+            };
+            EventHandler<MessageEventArgs> onWebSocketReceiveMessage = (sender, args) => {
+                OnWebSocketReceiveMessage(args);
+            };
+            EventHandler<ErrorEventArgs> onWebSocketError = (sender, args) =>
+            {
+                Messenger.Default.Send(new ErrorWebSocketMessage { ErrorMessage = args.Message });
+            };
+            await _ravenDbCommunicationService.ConnectAsync(databaseUrl, onWebSocketOpen, onWebSocketClose, onWebSocketReceiveMessage, onWebSocketError);
+            return String.Empty;
         }
 
-        public string Disconnect()
+        public void Disconnect()
         {
-            return _ravenDbCommunicationService.CloseWebSocket();
+            _ravenDbCommunicationService.Disconnect();
         }
 
         public void LogsClear()
         {
             lock (_collectionLogsSyncObject)
             {
-                _logs.Clear();
+                _filterLogs.Clear();
                 _allLogs.Clear();
             }
         }
@@ -88,7 +83,7 @@ namespace RavenAdminLogsCollectionTool.Services
         {
             lock (_collectionLogsSyncObject)
             {
-                return _logs.Count == 0;
+                return _filterLogs.Count == 0;
             }
         }
 
@@ -98,17 +93,20 @@ namespace RavenAdminLogsCollectionTool.Services
             {
                 var logs = new ObservableCollection<LogInfo>(_allLogs.Where(
                     logInfo => logInfo.Level >= logLevel && logInfo.LoggerName.Contains(category)));
-                _logs.Clear();
+                _filterLogs.Clear();
                 foreach (var log in logs)
                 {
-                    _logs.Add(log);
+                    _filterLogs.Add(log);
                 }
             }
         }
 
         public string LogsToJsonString()
         {
-            return JsonConvert.SerializeObject(_logs, Formatting.Indented);
+            lock (_collectionLogsSyncObject)
+            {
+                return JsonConvert.SerializeObject(_filterLogs, Formatting.Indented);
+            }
         }
 
         private void OnWebSocketReceiveMessage(MessageEventArgs args)
@@ -123,7 +121,7 @@ namespace RavenAdminLogsCollectionTool.Services
             {
                 if (logInfo.Level >= LogLevel && logInfo.LoggerName.Contains(Category))
                 {
-                    _logs.Add(logInfo);
+                    _filterLogs.Add(logInfo);
                 }
                 _allLogs.Add(logInfo);
             }
@@ -134,12 +132,12 @@ namespace RavenAdminLogsCollectionTool.Services
         {
             lock (_collectionLogsSyncObject)
             {
-                if (_logs.Count == 0)
+                if (_filterLogs.Count == 0)
                 {
                     return String.Empty;
                 }
                 var stringBuilder = new StringBuilder();
-                foreach (var log in _logs)
+                foreach (var log in _filterLogs)
                 {
                     stringBuilder.Append(log);
                 }

@@ -32,7 +32,8 @@ namespace RavenAdminLogsCollectionTool.ViewModel
         private bool _disconnectIsEnabled;
         private bool _isAutoScrollEnabled;
 
-        public MainViewModel(ILogService logService, IDialogService dialogService, IFileSystemService fileSystemService, IConfigurationService configurationService)
+        public MainViewModel(ILogService logService, IDialogService dialogService, IFileSystemService fileSystemService,
+            IConfigurationService configurationService)
         {
             _logService = logService;
             _dialogService = dialogService;
@@ -122,9 +123,9 @@ namespace RavenAdminLogsCollectionTool.ViewModel
             get
             {
                 return _logsClearCommand ?? (_logsClearCommand = new RelayCommand(() =>
-                    {
-                        _logService.LogsClear();
-                    }, () => !_logService.IsAllLogsEmpty()));
+                       {
+                           _logService.LogsClear();
+                       }, () => !_logService.IsAllLogsEmpty()));
             }
         }
 
@@ -137,13 +138,16 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                         ConnectIsEnabled = false;
                         _configurationService.SetValue("DatabaseUrl", DatabaseUrl);
                         _configurationService.SetValue("Category", Category);
-                        string message = await _logService.Connect(DatabaseUrl);
-                        if (!String.IsNullOrEmpty(message))
+                        try
+                        {
+                            await _logService.ConnectAsync(DatabaseUrl);
+                        }
+                        catch (Exception ex)
                         {
                             ConnectIsEnabled = true;
                             DisconnectIsEnabled = false;
-                            _dialogService.ShowErrorMessage("Network error has occurred. " + message);
-                        }
+                            _dialogService.ShowErrorMessage("Network error has occurred. " + ex.Message);
+                        }                        
                     }, () => !String.IsNullOrEmpty(DatabaseUrl) && CheckDatabaseUrl()));
             }
         }
@@ -155,10 +159,13 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                 return _disconnectCommand ?? (_disconnectCommand = new RelayCommand(() =>
                     {
                         DisconnectIsEnabled = false;
-                        string message = _logService.Disconnect();
-                        if (!String.IsNullOrEmpty(message))
+                        try
                         {
-                            _dialogService.ShowErrorMessage("Websocket error has occurred. " + message);
+                            _logService.Disconnect();
+                        }
+                        catch (Exception ex)
+                        {
+                            _dialogService.ShowErrorMessage("Websocket error has occurred. " + ex.Message);
                         }
                     }));
             }

@@ -5,8 +5,8 @@ namespace RavenAdminLogsCollectionTool.Services
 {
     public interface ILogService
     {
-        Task<string> Connect(string databaseUrl);
-        string Disconnect();
+        Task<string> ConnectAsync(string databaseUrl);
+        void Disconnect();
         void LogsClear();
         bool IsAllLogsEmpty();
         bool IsShowLogsEmpty();

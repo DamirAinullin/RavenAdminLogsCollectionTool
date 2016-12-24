@@ -13,7 +13,19 @@ namespace RavenAdminLogsCollectionTool.Services
         private readonly string _eventId = RandomIdGenerator.GenerateId();
         private WebSocket _webSocket;
 
-        public async Task<string> ConfigureAdminLogsAsync(string databaseUrl)
+        public async Task<string> ConnectAsync(string databaseUrl, EventHandler onOpen,
+            EventHandler<CloseEventArgs> onClose, EventHandler<MessageEventArgs> onMessage, EventHandler<ErrorEventArgs> onError)
+        {
+            await ConfigureAdminLogsAsync(databaseUrl);
+            return OpenWebSocket(databaseUrl, onOpen, onClose, onMessage, onError);
+        }
+
+        public void Disconnect()
+        {
+            _webSocket?.CloseAsync();
+        }
+
+        private async Task<string> ConfigureAdminLogsAsync(string databaseUrl)
         {
             string message = String.Empty;
             try
@@ -35,7 +47,7 @@ namespace RavenAdminLogsCollectionTool.Services
             return message;
         }
 
-        public string OpenWebSocket(string databaseUrl, EventHandler onOpen,
+        private string OpenWebSocket(string databaseUrl, EventHandler onOpen,
             EventHandler<CloseEventArgs> onClose, EventHandler<MessageEventArgs> onMessage, EventHandler<ErrorEventArgs> onError)
         {
             try
@@ -52,19 +64,6 @@ namespace RavenAdminLogsCollectionTool.Services
             catch (Exception ex)
             {
                 return $"{ ex.Message} Websocket ReadyState: {_webSocket.ReadyState}";
-            }
-        }
-
-        public string CloseWebSocket()
-        {
-            try
-            {
-                _webSocket?.CloseAsync();
-                return String.Empty;
-            }
-            catch (Exception ex)
-            {
-                return $"{ ex.Message} Websocket ReadyState: {_webSocket?.ReadyState}";
             }
         }
 

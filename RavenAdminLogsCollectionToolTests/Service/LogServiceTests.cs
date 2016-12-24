@@ -18,79 +18,60 @@ namespace RavenAdminLogsCollectionToolTests.Service
         }
 
         [Test]
-        public void LogServiceConnectTest()
+        public void LogServiceConnectAsyncTest()
         {
-            _ravenDbCommunicationServiceMock.Setup(m => m.ConfigureAdminLogsAsync(It.IsAny<string>()))
-                .ReturnsAsync(String.Empty);
-            _ravenDbCommunicationServiceMock.Setup(m => m.OpenWebSocket(It.IsAny<string>(), It.IsAny<EventHandler>(),
+            _ravenDbCommunicationServiceMock.Setup(m => m.ConnectAsync(It.IsAny<string>(), It.IsAny<EventHandler>(),
                     It.IsAny<EventHandler<CloseEventArgs>>(), It.IsAny<EventHandler<MessageEventArgs>>(),
-                    It.IsAny<EventHandler<ErrorEventArgs>>()))
-                .Returns(String.Empty);
+                    It.IsAny<EventHandler<ErrorEventArgs>>())).ReturnsAsync(String.Empty);
 
             var logService = new LogService(_ravenDbCommunicationServiceMock.Object);
 
-            string errorMessage = logService.Connect("http://localhost:8080/").Result;
+            string errorMessage = logService.ConnectAsync("http://localhost:8080/").Result;
 
             Assert.IsEmpty(errorMessage);
-            _ravenDbCommunicationServiceMock.Verify(m => m.ConfigureAdminLogsAsync("http://localhost:8080/"), Times.Once);
             _ravenDbCommunicationServiceMock.Verify(
-                m => m.OpenWebSocket("http://localhost:8080/", It.IsAny<EventHandler>(),
+                m => m.ConnectAsync("http://localhost:8080/", It.IsAny<EventHandler>(),
                     It.IsAny<EventHandler<CloseEventArgs>>(), It.IsAny<EventHandler<MessageEventArgs>>(),
                     It.IsAny<EventHandler<ErrorEventArgs>>()), Times.Once);
         }
 
         [Test]
-        public void LogServiceConnectFailedOpenWebSocketIsNotEmptyTest()
+        public void LogServiceConnectAsyncFailedTest()
         {
-            _ravenDbCommunicationServiceMock.Setup(m => m.ConfigureAdminLogsAsync(It.IsAny<string>()))
-                .ReturnsAsync(String.Empty);
-            _ravenDbCommunicationServiceMock.Setup(m => m.OpenWebSocket(It.IsAny<string>(), It.IsAny<EventHandler>(),
+            _ravenDbCommunicationServiceMock.Setup(m => m.ConnectAsync(It.IsAny<string>(), It.IsAny<EventHandler>(),
                     It.IsAny<EventHandler<CloseEventArgs>>(), It.IsAny<EventHandler<MessageEventArgs>>(),
                     It.IsAny<EventHandler<ErrorEventArgs>>()))
-                .Returns("Error");
+                .Throws(new Exception("Error"));
 
             var logService = new LogService(_ravenDbCommunicationServiceMock.Object);
-
-            string errorMessage = logService.Connect("http://localhost:8080/").Result;
-
-            Assert.AreEqual("Error", errorMessage);
-            _ravenDbCommunicationServiceMock.Verify(m => m.ConfigureAdminLogsAsync("http://localhost:8080/"), Times.Once);
-            _ravenDbCommunicationServiceMock.Verify(m => m.OpenWebSocket(It.IsAny<string>(), It.IsAny<EventHandler>(),
+            Assert.That(() => logService.ConnectAsync("http://localhost:8080/"),
+               Throws.TypeOf<Exception>().With.Message.EquivalentTo("Error"));
+            _ravenDbCommunicationServiceMock.Verify(m => m.ConnectAsync(It.IsAny<string>(), It.IsAny<EventHandler>(),
                 It.IsAny<EventHandler<CloseEventArgs>>(), It.IsAny<EventHandler<MessageEventArgs>>(),
                 It.IsAny<EventHandler<ErrorEventArgs>>()), Times.Once);
         }
-
-        [Test]
-        public void LogServiceConnectFailedConfigureAdminLogsAsyncIsNotEmptyTest()
-        {
-            _ravenDbCommunicationServiceMock.Setup(m => m.ConfigureAdminLogsAsync(It.IsAny<string>()))
-                .ReturnsAsync("Error");
-            _ravenDbCommunicationServiceMock.Setup(m => m.OpenWebSocket(It.IsAny<string>(), It.IsAny<EventHandler>(),
-                    It.IsAny<EventHandler<CloseEventArgs>>(), It.IsAny<EventHandler<MessageEventArgs>>(),
-                    It.IsAny<EventHandler<ErrorEventArgs>>()))
-                .Returns(String.Empty);
-
-            var logService = new LogService(_ravenDbCommunicationServiceMock.Object);
-
-            string errorMessage = logService.Connect("http://localhost:8080/").Result;
-
-            Assert.AreEqual("Error", errorMessage);
-            _ravenDbCommunicationServiceMock.Verify(m => m.ConfigureAdminLogsAsync("http://localhost:8080/"), Times.Once);
-            _ravenDbCommunicationServiceMock.Verify(m => m.OpenWebSocket(It.IsAny<string>(), It.IsAny<EventHandler>(),
-                It.IsAny<EventHandler<CloseEventArgs>>(), It.IsAny<EventHandler<MessageEventArgs>>(),
-                It.IsAny<EventHandler<ErrorEventArgs>>()), Times.Never);
-        }
-
+        
         [Test]
         public void LogServiceDisconnectTest()
         {
-            _ravenDbCommunicationServiceMock.Setup(m => m.CloseWebSocket()).Returns("");
+            _ravenDbCommunicationServiceMock.Setup(m => m.Disconnect());
             var logService = new LogService(_ravenDbCommunicationServiceMock.Object);
 
-            string errorMessage = logService.Disconnect();
+            logService.Disconnect();
 
-            Assert.IsEmpty(errorMessage);
-            _ravenDbCommunicationServiceMock.Verify(m => m.CloseWebSocket(), Times.Once);
+            _ravenDbCommunicationServiceMock.Verify(m => m.Disconnect(), Times.Once);
+        }
+
+        [Test]
+        public void LogServiceDisconnectFailedTest()
+        {
+            _ravenDbCommunicationServiceMock.Setup(m => m.Disconnect()).Throws(new Exception("Error"));
+            var logService = new LogService(_ravenDbCommunicationServiceMock.Object);
+
+            Assert.That(() => logService.Disconnect(),
+               Throws.TypeOf<Exception>().With.Message.EquivalentTo("Error"));
+
+            _ravenDbCommunicationServiceMock.Verify(m => m.Disconnect(), Times.Once);
         }
     }
 }

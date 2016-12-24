@@ -6,12 +6,10 @@ namespace RavenAdminLogsCollectionTool.Services
 {
     public interface IRavenDbCommunicationService
     {
-        Task<string> ConfigureAdminLogsAsync(string databaseUrl);
-
-        string OpenWebSocket(string databaseUrl, EventHandler onOpen,
+        Task<string> ConnectAsync(string databaseUrl, EventHandler onOpen,
             EventHandler<CloseEventArgs> onClose, EventHandler<MessageEventArgs> onMessage,
             EventHandler<ErrorEventArgs> onError);
 
-        string CloseWebSocket();
+        void Disconnect();
     }
 }
