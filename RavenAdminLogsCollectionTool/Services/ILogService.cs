@@ -9,7 +9,7 @@ namespace RavenAdminLogsCollectionTool.Services
         void Disconnect();
         void LogsClear();
         bool IsAllLogsEmpty();
-        bool IsShowLogsEmpty();
+        bool IsFilterLogsEmpty();
         void FilterLogs(LogLevel logLevel, string category);
         string LogsToJsonString();
 

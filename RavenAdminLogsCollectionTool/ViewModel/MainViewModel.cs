@@ -31,6 +31,8 @@ namespace RavenAdminLogsCollectionTool.ViewModel
         private bool _connectIsEnabled = true;
         private bool _disconnectIsEnabled;
         private bool _isAutoScrollEnabled;
+        private bool _isDatabaseUrlFocused;
+        private string _messageText;
 
         public MainViewModel(ILogService logService, IDialogService dialogService, IFileSystemService fileSystemService,
             IConfigurationService configurationService)
@@ -58,6 +60,16 @@ namespace RavenAdminLogsCollectionTool.ViewModel
             {
                 FullLogText = message.FullLogText;
             });
+            Messenger.Default.Register<LogMessage>(this, message =>
+            {
+                MessageText = message.LogText;
+            });
+        }
+
+        public string MessageText
+        {
+            get { return _messageText; }
+            set { Set(ref _messageText, value); }
         }
 
         public string DatabaseUrl
@@ -96,6 +108,12 @@ namespace RavenAdminLogsCollectionTool.ViewModel
             set { Set(ref _disconnectIsEnabled, value); }
         }
 
+        public bool IsDatabaseUrlFocused
+        {
+            get { return _isDatabaseUrlFocused; }
+            set { Set(ref _isDatabaseUrlFocused, value); }
+        }
+
         public LogLevel LogLevel
         {
             get { return _logLevel; }
@@ -123,9 +141,9 @@ namespace RavenAdminLogsCollectionTool.ViewModel
             get
             {
                 return _logsClearCommand ?? (_logsClearCommand = new RelayCommand(() =>
-                       {
-                           _logService.LogsClear();
-                       }, () => !_logService.IsAllLogsEmpty()));
+                    {
+                        _logService.LogsClear();
+                    }, () => !_logService.IsAllLogsEmpty()));
             }
         }
 
@@ -191,7 +209,7 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                         string jsonString = _logService.LogsToJsonString();
                         string filePath = _fileSystemService.SaveLogFile(jsonString);
                         _dialogService.ShowMessage("Log file has been saved as " + filePath, "File saved");
-                    }, () => !_logService.IsShowLogsEmpty()));
+                    }, () => !_logService.IsFilterLogsEmpty()));
             }
         }
 
@@ -217,6 +235,7 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                         {
                             IsAutoScrollEnabled = AutoScrollBehavior.IsEnabled = isAutoScrollEnabled;
                         }
+                        IsDatabaseUrlFocused = true;
                     }));
             }
         }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,7 +20,7 @@ namespace RavenAdminLogsCollectionTool.Services
     {
         private readonly IRavenDbCommunicationService _ravenDbCommunicationService;
         private readonly object _collectionLogsSyncObject = new object();
-        private ObservableCollection<LogInfo> _filterLogs = new ObservableCollection<LogInfo>();
+        private readonly List<LogInfo> _filterLogs = new List<LogInfo>();
         private readonly List<LogInfo> _allLogs = new List<LogInfo>();
 
         public LogLevel LogLevel { get; set; } = LogLevel.Debug;
@@ -30,11 +29,6 @@ namespace RavenAdminLogsCollectionTool.Services
         public LogService(IRavenDbCommunicationService ravenDbCommunicationService)
         {
             _ravenDbCommunicationService = ravenDbCommunicationService;
-            _filterLogs.CollectionChanged += (sender, args) =>
-            {
-                _filterLogs = (ObservableCollection<LogInfo>)sender;
-                Messenger.Default.Send(new LogsMessage{ FullLogText = LogsToString() });
-            };
         }
 
         public async Task<string> ConnectAsync(string databaseUrl)
@@ -53,7 +47,8 @@ namespace RavenAdminLogsCollectionTool.Services
             {
                 Messenger.Default.Send(new ErrorWebSocketMessage { ErrorMessage = args.Message });
             };
-            await _ravenDbCommunicationService.ConnectAsync(databaseUrl, onWebSocketOpen, onWebSocketClose, onWebSocketReceiveMessage, onWebSocketError);
+            await _ravenDbCommunicationService.ConnectAsync(databaseUrl, onWebSocketOpen,
+                onWebSocketClose, onWebSocketReceiveMessage, onWebSocketError);
             return String.Empty;
         }
 
@@ -66,6 +61,7 @@ namespace RavenAdminLogsCollectionTool.Services
         {
             lock (_collectionLogsSyncObject)
             {
+                Messenger.Default.Send(new LogsMessage { FullLogText = String.Empty });
                 _filterLogs.Clear();
                 _allLogs.Clear();
             }
@@ -79,7 +75,7 @@ namespace RavenAdminLogsCollectionTool.Services
             }
         }
 
-        public bool IsShowLogsEmpty()
+        public bool IsFilterLogsEmpty()
         {
             lock (_collectionLogsSyncObject)
             {
@@ -91,13 +87,14 @@ namespace RavenAdminLogsCollectionTool.Services
         {
             lock (_collectionLogsSyncObject)
             {
-                var logs = new ObservableCollection<LogInfo>(_allLogs.Where(
+                var logs = new List<LogInfo>(_allLogs.Where(
                     logInfo => logInfo.Level >= logLevel && logInfo.LoggerName.Contains(category)));
                 _filterLogs.Clear();
                 foreach (var log in logs)
                 {
                     _filterLogs.Add(log);
                 }
+                Messenger.Default.Send(new LogsMessage { FullLogText = LogsToString() });
             }
         }
 
@@ -121,6 +118,7 @@ namespace RavenAdminLogsCollectionTool.Services
             {
                 if (logInfo.Level >= LogLevel && logInfo.LoggerName.Contains(Category))
                 {
+                    Messenger.Default.Send(new LogMessage { LogText = logInfo.ToString() });
                     _filterLogs.Add(logInfo);
                 }
                 _allLogs.Add(logInfo);

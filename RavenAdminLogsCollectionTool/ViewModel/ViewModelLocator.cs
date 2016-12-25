@@ -20,13 +20,8 @@ namespace RavenAdminLogsCollectionTool.ViewModel
             SimpleIoc.Default.Register<MainViewModel>();
         }
 
-        [SuppressMessage("Microsoft.Performance",
-            "CA1822:MarkMembersAsStatic",
+        [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic",
             Justification = "This non-static member is needed for data binding purposes.")]
         public MainViewModel Main => ServiceLocator.Current.GetInstance<MainViewModel>();
-
-        public static void Cleanup()
-        {
-        }
     }
 }

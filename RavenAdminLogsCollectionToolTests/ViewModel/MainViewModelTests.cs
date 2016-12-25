@@ -140,9 +140,9 @@ namespace RavenAdminLogsCollectionToolTests.ViewModel
 
             Assert.IsTrue(mainViewModel.FilterLogsCommand.CanExecute(null));
 
-            mainViewModel.FilterLogsCommand.Execute(LogLevel.Warning);
+            mainViewModel.FilterLogsCommand.Execute(LogLevel.Warn);
 
-            _logServiceMock.Verify(m => m.FilterLogs(LogLevel.Warning, "LoggerName"), Times.Once);
+            _logServiceMock.Verify(m => m.FilterLogs(LogLevel.Warn, "LoggerName"), Times.Once);
         }
         
         [Test]
@@ -150,12 +150,12 @@ namespace RavenAdminLogsCollectionToolTests.ViewModel
         {
             _fileSystemServiceMock.Setup(m => m.SaveLogFile( It.IsAny<string>()));
             _logServiceMock.Setup(m => m.LogsToJsonString()).Returns("test");
-            _logServiceMock.Setup(m => m.IsShowLogsEmpty()).Returns(true);
+            _logServiceMock.Setup(m => m.IsFilterLogsEmpty()).Returns(true);
             var mainViewModel = new MainViewModel(_logServiceMock.Object, _dialogServiceMock.Object,
                 _fileSystemServiceMock.Object, _configurationServiceMock.Object);
             Assert.IsFalse(mainViewModel.ExportCommand.CanExecute(null));
 
-            _logServiceMock.Setup(m => m.IsShowLogsEmpty()).Returns(false);
+            _logServiceMock.Setup(m => m.IsFilterLogsEmpty()).Returns(false);
             Assert.IsTrue(mainViewModel.ExportCommand.CanExecute(null));
 
             mainViewModel.ExportCommand.Execute(null);
