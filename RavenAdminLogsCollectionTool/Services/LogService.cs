@@ -20,7 +20,7 @@ namespace RavenAdminLogsCollectionTool.Services
     {
         private readonly IRavenDbCommunicationService _ravenDbCommunicationService;
         private readonly object _collectionLogsSyncObject = new object();
-        private readonly List<LogInfo> _filterLogs = new List<LogInfo>();
+        private List<LogInfo> _filterLogs = new List<LogInfo>();
         private readonly List<LogInfo> _allLogs = new List<LogInfo>();
 
         public LogLevel LogLevel { get; set; } = LogLevel.Debug;
@@ -87,13 +87,8 @@ namespace RavenAdminLogsCollectionTool.Services
         {
             lock (_collectionLogsSyncObject)
             {
-                var logs = new List<LogInfo>(_allLogs.Where(
+                _filterLogs = new List<LogInfo>(_allLogs.Where(
                     logInfo => logInfo.Level >= logLevel && logInfo.LoggerName.Contains(category)));
-                _filterLogs.Clear();
-                foreach (var log in logs)
-                {
-                    _filterLogs.Add(log);
-                }
                 Messenger.Default.Send(new LogsMessage { FullLogText = LogsToString() });
             }
         }
@@ -128,19 +123,16 @@ namespace RavenAdminLogsCollectionTool.Services
 
         private string LogsToString()
         {
-            lock (_collectionLogsSyncObject)
+            if (_filterLogs.Count == 0)
             {
-                if (_filterLogs.Count == 0)
-                {
-                    return String.Empty;
-                }
-                var stringBuilder = new StringBuilder();
-                foreach (var log in _filterLogs)
-                {
-                    stringBuilder.Append(log);
-                }
-                return stringBuilder.ToString();
+                return String.Empty;
             }
+            var stringBuilder = new StringBuilder();
+            foreach (var log in _filterLogs)
+            {
+                stringBuilder.Append(log);
+            }
+            return stringBuilder.ToString();
         }
     }
 }

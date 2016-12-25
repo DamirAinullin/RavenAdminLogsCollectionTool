@@ -18,8 +18,14 @@ namespace RavenAdminLogsCollectionTool.ViewModel
         private readonly IFileSystemService _fileSystemService;
         private readonly IConfigurationService _configurationService;
         private string _fullLogText = string.Empty;
+        private string _messageText;
         private string _databaseUrl;
         private string _category;
+        private bool _connectIsEnabled = true;
+        private bool _disconnectIsEnabled;
+        private bool _isAutoScrollEnabled;
+        private bool _isDatabaseUrlFocused;
+        private LogLevel _logLevel;
         private ICommand _logsClearCommand;
         private ICommand _saveToFileCommand;
         private ICommand _connectCommand;
@@ -27,12 +33,6 @@ namespace RavenAdminLogsCollectionTool.ViewModel
         private ICommand _windowLoadedCommand;
         private ICommand _filterLogsCommand;
         private ICommand _keepDownCommand;
-        private LogLevel _logLevel;
-        private bool _connectIsEnabled = true;
-        private bool _disconnectIsEnabled;
-        private bool _isAutoScrollEnabled;
-        private bool _isDatabaseUrlFocused;
-        private string _messageText;
 
         public MainViewModel(ILogService logService, IDialogService dialogService, IFileSystemService fileSystemService,
             IConfigurationService configurationService)
