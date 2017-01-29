@@ -11,7 +11,7 @@
         mc:Ignorable="d ignore"
         WindowStartupLocation="CenterScreen"
         Height="580"
-        Width="960"
+        Width="1160"
         Title="RavenDB admin logs collection tool"
         DataContext="{Binding Main, Source={StaticResource Locator}}">
     <Window.Resources>
@@ -33,7 +33,7 @@
         </Grid.RowDefinitions>
         <TextBlock x:Name="DatabaseUrlTextBlock" HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="Database URL" VerticalAlignment="Top" RenderTransformOrigin="0.163,0.812" Grid.Row="0"/>
         <StackPanel Grid.Row="0">
-            <TextBox x:Name="DatabaseUrlTextBox" HorizontalAlignment="Left" helpers:FocusExtension.IsFocused="{Binding IsDatabaseUrlFocused}" Text="{Binding DatabaseUrl, ValidatesOnExceptions=true, NotifyOnValidationError=true, UpdateSourceTrigger=PropertyChanged}" Height="22" Margin="10,32,0,12.4" TextWrapping="NoWrap" VerticalAlignment="Center" Width="255" MaxLines="1"/>
+            <TextBox x:Name="DatabaseUrlTextBox" HorizontalAlignment="Left" helpers:FocusExtension.IsFocused="{Binding DatabaseUrlIsFocused}" Text="{Binding DatabaseUrl, ValidatesOnExceptions=true, NotifyOnValidationError=true, UpdateSourceTrigger=PropertyChanged}" Height="22" Margin="10,32,0,12.4" TextWrapping="NoWrap" VerticalAlignment="Center" Width="255" MaxLines="1"/>
         </StackPanel>
         <TextBlock x:Name="CategoryTextBlock" HorizontalAlignment="Left" Margin="272,10,0,0" TextWrapping="Wrap" Text="Category" VerticalAlignment="Top" RenderTransformOrigin="0.163,0.812" Grid.Row="0"/>
         <StackPanel Grid.Row="0">
@@ -49,9 +49,11 @@
         </ComboBox>
         <Button x:Name="ConnectButton" Content="Connect" Command="{Binding ConnectCommand}" IsEnabled="{Binding ConnectIsEnabled, Mode=TwoWay}" HorizontalAlignment="Left" Margin="537,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0"/>
         <Button x:Name="DisconnectButton" Content="Disconnect" Command="{Binding DisconnectCommand}" IsEnabled="{Binding DisconnectIsEnabled, Mode=TwoWay}" HorizontalAlignment="Left" Margin="617,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0"/>
-        <ToggleButton x:Name="KeepDownButton" Content="Keep Down" Command="{Binding KeepDownCommand}" CommandParameter="{Binding IsChecked,RelativeSource={RelativeSource Self}}" IsChecked="{Binding IsAutoScrollEnabled}" HorizontalAlignment="Left" Margin="697,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0" RenderTransformOrigin="1.475,0.509"/>
+        <ToggleButton x:Name="KeepDownButton" Content="Keep Down" Command="{Binding KeepDownCommand}" CommandParameter="{Binding IsChecked,RelativeSource={RelativeSource Self}}" IsChecked="{Binding AutoScrollIsEnabled}" HorizontalAlignment="Left" Margin="697,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0" RenderTransformOrigin="1.475,0.509"/>
         <Button x:Name="ClearButton" Content="Clear" Command="{Binding LogsClearCommand}" HorizontalAlignment="Left" Margin="777,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0" RenderTransformOrigin="-0.173,0.591"/>
-        <Button x:Name="SaveToFileButton" Content="Export" Command="{Binding ExportCommand}" HorizontalAlignment="Left" Margin="857,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0" RenderTransformOrigin="0.227,0.436"/>
+        <Button x:Name="SaveToFileButton" Content="Export to file" Command="{Binding ExportCommand}" HorizontalAlignment="Left" Margin="857,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0" RenderTransformOrigin="0.227,0.436"/>
+        <Button x:Name="OpenLogFileButton" Content="Open log file" Command="{Binding OpenLogFileCommand}" HorizontalAlignment="Left" Margin="937,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0" RenderTransformOrigin="0.227,0.436"/>
+        <ToggleButton x:Name="StreamToFileButton" Content="Stream to file" Command="{Binding StreamToFileCommand}" CommandParameter="{Binding IsChecked,RelativeSource={RelativeSource Self}}" IsChecked="{Binding StreamToFileIsEnabled}" HorizontalAlignment="Left" Margin="1017,32,0,0" VerticalAlignment="Top" Width="75" Height="22" Grid.Row="0" RenderTransformOrigin="0.227,0.436"/>
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
             <i:Interaction.Behaviors>
                 <helpers:AutoScrollBehavior />

@@ -1,10 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using RavenAdminLogsCollectionTool.Model;
 
 namespace RavenAdminLogsCollectionTool.Services
 {
     public class FileSystemService : IFileSystemService
     {
+        private string _path;
+        private readonly object _syncFileObject = new object();
+
         public string SaveLogFile(string content)
         {
             string pathUser = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
@@ -13,8 +20,45 @@ namespace RavenAdminLogsCollectionTool.Services
             {
                 path = NextAvailableFilename(path);
             }
-            File.WriteAllText(path, content);
+            lock (_syncFileObject)
+            {
+                File.WriteAllText(path, content);
+            }
+            _path = path;
             return path;
+        }
+
+        public bool LogFileExists()
+        {
+            if (_path != null && File.Exists(_path))
+            {
+                return true;
+            }
+            string pathUser = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            _path = Path.Combine(pathUser, "Downloads", "logs.json");
+            return File.Exists(_path);
+        }
+
+        public async Task<List<LogInfo>> LoadLogsFromFileAsync()
+        {
+            using (var reader = File.OpenText(_path))
+            {
+                var fileText = await reader.ReadToEndAsync();
+                return JsonConvert.DeserializeObject<List<LogInfo>>(fileText);
+            }
+        }
+
+        public void SaveLogMessageToFile(string logMessageText)
+        {
+            if (_path == null || !File.Exists(_path))
+            {
+                string pathUser = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                _path = Path.Combine(pathUser, "Downloads", "logs.json");
+            }
+            lock (_syncFileObject)
+            {
+                File.AppendAllText(_path, logMessageText);
+            }
         }
 
         private string NextAvailableFilename(string path)

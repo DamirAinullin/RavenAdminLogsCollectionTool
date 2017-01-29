@@ -13,7 +13,6 @@ using RavenAdminLogsCollectionTool.Model;
 using WebSocketSharp;
 using LogLevel = RavenAdminLogsCollectionTool.Model.LogLevel;
 
-
 namespace RavenAdminLogsCollectionTool.Services
 {
     public class LogService : ILogService
@@ -101,10 +100,20 @@ namespace RavenAdminLogsCollectionTool.Services
             }
         }
 
+        public void LoadLogs(List<LogInfo> logs, LogLevel logLevel, string category)
+        {
+            lock (_collectionLogsSyncObject)
+            {
+                _allLogs.Clear();
+                _allLogs.AddRange(logs);
+                FilterLogs(logLevel, category);
+            }
+        }
+
         private void OnWebSocketReceiveMessage(MessageEventArgs args)
         {
             var jObject = JObject.Parse(args.Data);
-            if (jObject == null || (jObject["Type"] != null && jObject["Type"].ToString() == "Heartbeat"))
+            if (jObject == null || jObject["Type"] != null && jObject["Type"].ToString() == "Heartbeat")
             {
                 return;
             }

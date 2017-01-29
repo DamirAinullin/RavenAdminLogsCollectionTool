@@ -171,7 +171,7 @@ namespace RavenAdminLogsCollectionToolTests.ViewModel
         {
             _configurationServiceMock.Setup(m => m.GetValue("DatabaseUrl")).Returns(databaseUrl);
             _configurationServiceMock.Setup(m => m.GetValue("Category")).Returns(loggerName);
-            _configurationServiceMock.Setup(m => m.GetValue("IsAutoScrollEnabled")).Returns(isAutoScrollEnabled);
+            _configurationServiceMock.Setup(m => m.GetValue("AutoScrollIsEnabled")).Returns(isAutoScrollEnabled);
 
             var mainViewModel = new MainViewModel(_logServiceMock.Object, _dialogServiceMock.Object,
                 _fileSystemServiceMock.Object, _configurationServiceMock.Object);
@@ -182,7 +182,7 @@ namespace RavenAdminLogsCollectionToolTests.ViewModel
 
             Assert.AreEqual(checkDatabaseUrl, mainViewModel.DatabaseUrl);
             Assert.AreEqual(checkLoggerName, mainViewModel.Category);
-            Assert.AreEqual(checkIsAutoScrollEnabled, mainViewModel.IsAutoScrollEnabled);
+            Assert.AreEqual(checkIsAutoScrollEnabled, mainViewModel.AutoScrollIsEnabled);
         }
 
         [Test]
@@ -197,10 +197,10 @@ namespace RavenAdminLogsCollectionToolTests.ViewModel
 
             mainViewModel.KeepDownCommand.Execute(true);
 
-            Assert.IsTrue(mainViewModel.IsAutoScrollEnabled);
+            Assert.IsTrue(mainViewModel.AutoScrollIsEnabled);
             Assert.IsTrue(AutoScrollBehavior.IsEnabled);
 
-            _configurationServiceMock.Setup(m => m.SetValue("IsAutoScrollEnabled", "true"));
+            _configurationServiceMock.Setup(m => m.SetValue("AutoScrollIsEnabled", "true"));
         }
     }
 }

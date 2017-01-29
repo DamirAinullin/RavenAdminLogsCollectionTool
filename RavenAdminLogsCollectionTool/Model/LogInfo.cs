@@ -6,6 +6,15 @@ namespace RavenAdminLogsCollectionTool.Model
 {
     public class LogInfo
     {
+        public LogInfo()
+        {
+        }
+
+        public LogInfo(string fileLogInfoString)
+        {
+            
+        }
+
         [JsonConverter(typeof(StringEnumConverter))]
         public LogLevel Level { get; set; }
         public string Database { get; set; }

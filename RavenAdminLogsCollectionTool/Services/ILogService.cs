@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using RavenAdminLogsCollectionTool.Model;
 
 namespace RavenAdminLogsCollectionTool.Services
@@ -12,8 +13,10 @@ namespace RavenAdminLogsCollectionTool.Services
         bool IsFilterLogsEmpty();
         void FilterLogs(LogLevel logLevel, string category);
         string LogsToJsonString();
+        void LoadLogs(List<LogInfo> logs, LogLevel logLevel, string category);
 
         LogLevel LogLevel { get; set; }
         string Category { get; set; }
+
     }
 }
