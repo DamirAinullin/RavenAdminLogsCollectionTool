@@ -9,6 +9,6 @@ namespace RavenAdminLogsCollectionTool.Services
         string SaveLogFile(string content);
         bool LogFileExists();
         Task<List<LogInfo>> LoadLogsFromFileAsync();
-        void SaveLogMessageToFile(string logMessageText);
+        void SaveLogMessageToFile(LogInfo logInfo);
     }
 }

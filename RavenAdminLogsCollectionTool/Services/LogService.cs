@@ -122,7 +122,7 @@ namespace RavenAdminLogsCollectionTool.Services
             {
                 if (logInfo.Level >= LogLevel && logInfo.LoggerName.Contains(Category))
                 {
-                    Messenger.Default.Send(new LogMessage { LogText = logInfo.ToString() });
+                    Messenger.Default.Send(logInfo);
                     _filterLogs.Add(logInfo);
                 }
                 _allLogs.Add(logInfo);

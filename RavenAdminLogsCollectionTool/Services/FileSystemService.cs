@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using RavenAdminLogsCollectionTool.Model;
@@ -11,6 +12,11 @@ namespace RavenAdminLogsCollectionTool.Services
     {
         private string _path;
         private readonly object _syncFileObject = new object();
+        private readonly JsonSerializer _jsonSerializer = new JsonSerializer
+        {
+            Formatting = Formatting.Indented,
+            TypeNameHandling = TypeNameHandling.Auto
+        };
 
         public string SaveLogFile(string content)
         {
@@ -20,10 +26,9 @@ namespace RavenAdminLogsCollectionTool.Services
             {
                 path = NextAvailableFilename(path);
             }
-            lock (_syncFileObject)
-            {
-                File.WriteAllText(path, content);
-            }
+
+            File.WriteAllText(path, content);
+
             _path = path;
             return path;
         }
@@ -41,14 +46,14 @@ namespace RavenAdminLogsCollectionTool.Services
 
         public async Task<List<LogInfo>> LoadLogsFromFileAsync()
         {
-            using (var reader = File.OpenText(_path))
+            using (StreamReader reader = File.OpenText(_path))
             {
                 var fileText = await reader.ReadToEndAsync();
                 return JsonConvert.DeserializeObject<List<LogInfo>>(fileText);
             }
         }
 
-        public void SaveLogMessageToFile(string logMessageText)
+        public void SaveLogMessageToFile(LogInfo logInfo)
         {
             if (_path == null || !File.Exists(_path))
             {
@@ -57,7 +62,7 @@ namespace RavenAdminLogsCollectionTool.Services
             }
             lock (_syncFileObject)
             {
-                File.AppendAllText(_path, logMessageText);
+                AppendLogInfo(_path, logInfo);
             }
         }
 
@@ -105,6 +110,31 @@ namespace RavenAdminLogsCollectionTool.Services
             }
 
             return string.Format(pattern, max);
+        }
+
+        private void AppendLogInfo(string filename, LogInfo logInfo)
+        {
+            bool firstLogInfo = !File.Exists(filename);
+
+            using (var fileStream = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
+            using (var streamWriter = new StreamWriter(fileStream, Encoding.UTF8))
+            using (var jsonTextWriter = new JsonTextWriter(streamWriter))
+            {
+                if (firstLogInfo)
+                {
+                    streamWriter.Write("[\n");
+                    streamWriter.Flush();
+                }
+                else
+                {
+                    fileStream.Seek(-Encoding.UTF8.GetByteCount("]\n"), SeekOrigin.End);
+                    streamWriter.Write(",\n");
+                    streamWriter.Flush();
+                }
+
+                _jsonSerializer.Serialize(jsonTextWriter, logInfo);
+                streamWriter.Write("\n]");
+            }
         }
     }
 }

@@ -7,6 +7,7 @@ using GalaSoft.MvvmLight.CommandWpf;
 using GalaSoft.MvvmLight.Messaging;
 using RavenAdminLogsCollectionTool.Helpers;
 using RavenAdminLogsCollectionTool.Messages;
+using RavenAdminLogsCollectionTool.Model;
 using RavenAdminLogsCollectionTool.Services;
 using LogLevel = RavenAdminLogsCollectionTool.Model.LogLevel;
 
@@ -24,9 +25,10 @@ namespace RavenAdminLogsCollectionTool.ViewModel
         private string _category;
         private bool _connectIsEnabled = true;
         private bool _disconnectIsEnabled;
-        private bool _autoScrollIsEnabled;
+        private bool _autoScrollIsEnabled = true;
         private bool _databaseUrlIsFocused;
         private bool _streamToFileIsEnabled;
+        private bool _saveToFileOpenLogFileEnabled = true;
         private LogLevel _logLevel;
         private ICommand _logsClearCommand;
         private ICommand _saveToFileCommand;
@@ -64,15 +66,16 @@ namespace RavenAdminLogsCollectionTool.ViewModel
             {
                 FullLogText = message.FullLogText;
             });
-            Messenger.Default.Register<LogMessage>(this, message =>
+            Messenger.Default.Register<LogInfo>(this, message =>
             {
-                MessageText = message.LogText;
+                MessageText = message.ToString();
                 if (StreamToFileIsEnabled)
                 {
                     Task.Factory.StartNew(() => {
-                         _fileSystemService.SaveLogMessageToFile(message.LogText);
+                         _fileSystemService.SaveLogMessageToFile(message);
                     });
                 }
+                _fullLogText += message.ToString();
             });
         }
 
@@ -144,6 +147,12 @@ namespace RavenAdminLogsCollectionTool.ViewModel
         {
             get { return _autoScrollIsEnabled; }
             set { Set(ref _autoScrollIsEnabled, value); }
+        }
+
+        public bool SaveToFileOpenLogFileOpenLogFileOpenLogFileEnabled
+        {
+            get { return _saveToFileOpenLogFileEnabled; }
+            set { Set(ref _saveToFileOpenLogFileEnabled, value); }
         }
 
         public bool StreamToFileIsEnabled
@@ -225,7 +234,7 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                         string jsonString = _logService.LogsToJsonString();
                         string filePath = _fileSystemService.SaveLogFile(jsonString);
                         _dialogService.ShowMessage("Log file has been saved as " + filePath, "File saved");
-                    }, () => !_logService.IsFilterLogsEmpty()));
+                    }, () => SaveToFileOpenLogFileOpenLogFileOpenLogFileEnabled && !_logService.IsFilterLogsEmpty()));
             }
         }
 
@@ -237,7 +246,7 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                 {
                     var logs = await _fileSystemService.LoadLogsFromFileAsync();
                     _logService.LoadLogs(logs, LogLevel, Category);
-                }, () => _fileSystemService.LogFileExists()));
+                }, () => SaveToFileOpenLogFileOpenLogFileOpenLogFileEnabled && _fileSystemService.LogFileExists()));
             }
         }
 
@@ -282,13 +291,19 @@ namespace RavenAdminLogsCollectionTool.ViewModel
 
         public ICommand StreamToFileCommand
         {
-            get {
+            get
+            {
                 return _streamToFileCommand ?? (_streamToFileCommand = new RelayCommand<bool>(isEnabled =>
                 {
                     StreamToFileIsEnabled = isEnabled;
                     if (StreamToFileIsEnabled)
                     {
-                        _dialogService.ShowMessage("Logs would save in stream way", "Logs would save to file");
+                        SaveToFileOpenLogFileOpenLogFileOpenLogFileEnabled = false;
+                       // _dialogService.ShowMessage("Logs would be saved to file in real time", "Open stream to file");
+                    }
+                    else
+                    {
+                        SaveToFileOpenLogFileOpenLogFileOpenLogFileEnabled = true;
                     }
                 }));
             }
@@ -297,8 +312,8 @@ namespace RavenAdminLogsCollectionTool.ViewModel
         private bool CheckDatabaseUrl()
         {
             Uri uriResult;
-            return String.IsNullOrEmpty(DatabaseUrl) || (Uri.TryCreate(DatabaseUrl, UriKind.Absolute, out uriResult)
-                && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps));
+            return String.IsNullOrEmpty(DatabaseUrl) || Uri.TryCreate(DatabaseUrl, UriKind.Absolute, out uriResult)
+                && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
         }
     }
 }
