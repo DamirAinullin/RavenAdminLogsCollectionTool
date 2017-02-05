@@ -8,7 +8,7 @@ using WebSocketSharp;
 
 namespace RavenAdminLogsCollectionTool.Services
 {
-    public class RavenDbCommunicationService : IRavenDbCommunicationService
+    public class RavenDbCommunicationService : IRavenDbCommunicationService, IDisposable
     {
         private readonly string _eventId = RandomIdGenerator.GenerateId();
         private WebSocket _webSocket;
@@ -71,6 +71,16 @@ namespace RavenAdminLogsCollectionTool.Services
         {
             var uri = new Uri(databaseUrl);
             return $"ws://{uri.Host}:{uri.Port}/admin/logs/events?id={_eventId}";
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            Dispose();
+        }
+
+        public void Dispose()
+        {
+            ((IDisposable) _webSocket).Dispose();
         }
     }
 }

@@ -164,14 +164,14 @@ namespace RavenAdminLogsCollectionToolTests.ViewModel
             _fileSystemServiceMock.Verify(m => m.SaveLogFile("test"), Times.Once);
         }
 
-        [TestCase("http://localhost:8080", "LoggerName", "true", "http://localhost:8080", "LoggerName", true, TestName = "WindowLoadedCommandTest")]
-        [TestCase("", "", "wrong data", null, null, false, TestName = "WindowLoadedCommandWrongDataTest")]
-        public void WindowLoadedCommandTest(string databaseUrl, string loggerName, string isAutoScrollEnabled,
+        [TestCase("http://localhost:8080", "LoggerName", "false", "http://localhost:8080", "LoggerName", false, TestName = "WindowLoadedCommandTest")]
+        [TestCase("", "", "wrong data", null, null, true, TestName = "WindowLoadedCommandWrongDataTest")]
+        public void WindowLoadedCommandTest(string databaseUrl, string loggerName, string autoScrollEnabledStr,
             string checkDatabaseUrl, string checkLoggerName, bool checkIsAutoScrollEnabled)
         {
             _configurationServiceMock.Setup(m => m.GetValue("DatabaseUrl")).Returns(databaseUrl);
             _configurationServiceMock.Setup(m => m.GetValue("Category")).Returns(loggerName);
-            _configurationServiceMock.Setup(m => m.GetValue("AutoScrollIsEnabled")).Returns(isAutoScrollEnabled);
+            _configurationServiceMock.Setup(m => m.GetValue("AutoScrollEnabled")).Returns(autoScrollEnabledStr);
 
             var mainViewModel = new MainViewModel(_logServiceMock.Object, _dialogServiceMock.Object,
                 _fileSystemServiceMock.Object, _configurationServiceMock.Object);
@@ -182,7 +182,7 @@ namespace RavenAdminLogsCollectionToolTests.ViewModel
 
             Assert.AreEqual(checkDatabaseUrl, mainViewModel.DatabaseUrl);
             Assert.AreEqual(checkLoggerName, mainViewModel.Category);
-            Assert.AreEqual(checkIsAutoScrollEnabled, mainViewModel.AutoScrollIsEnabled);
+            Assert.AreEqual(checkIsAutoScrollEnabled, mainViewModel.AutoScrollEnabled);
         }
 
         [Test]
@@ -197,7 +197,7 @@ namespace RavenAdminLogsCollectionToolTests.ViewModel
 
             mainViewModel.KeepDownCommand.Execute(true);
 
-            Assert.IsTrue(mainViewModel.AutoScrollIsEnabled);
+            Assert.IsTrue(mainViewModel.AutoScrollEnabled);
             Assert.IsTrue(AutoScrollBehavior.IsEnabled);
 
             _configurationServiceMock.Setup(m => m.SetValue("AutoScrollIsEnabled", "true"));

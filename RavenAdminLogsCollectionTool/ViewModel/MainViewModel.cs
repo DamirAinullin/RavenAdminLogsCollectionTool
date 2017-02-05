@@ -25,10 +25,9 @@ namespace RavenAdminLogsCollectionTool.ViewModel
         private string _category;
         private bool _connectIsEnabled = true;
         private bool _disconnectIsEnabled;
-        private bool _autoScrollIsEnabled = true;
+        private bool _autoScrollEnabled = true;
         private bool _databaseUrlIsFocused;
         private bool _streamToFileIsEnabled;
-        private bool _saveToFileOpenLogFileEnabled = true;
         private LogLevel _logLevel;
         private ICommand _logsClearCommand;
         private ICommand _saveToFileCommand;
@@ -143,17 +142,13 @@ namespace RavenAdminLogsCollectionTool.ViewModel
             set { Set(ref _fullLogText, value); }
         }
 
-        public bool AutoScrollIsEnabled
+        public bool AutoScrollEnabled
         {
-            get { return _autoScrollIsEnabled; }
-            set { Set(ref _autoScrollIsEnabled, value); }
+            get { return _autoScrollEnabled; }
+            set { Set(ref _autoScrollEnabled, value); }
         }
 
-        public bool SaveToFileOpenLogFileOpenLogFileOpenLogFileEnabled
-        {
-            get { return _saveToFileOpenLogFileEnabled; }
-            set { Set(ref _saveToFileOpenLogFileEnabled, value); }
-        }
+
 
         public bool StreamToFileIsEnabled
         {
@@ -234,7 +229,7 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                         string jsonString = _logService.LogsToJsonString();
                         string filePath = _fileSystemService.SaveLogFile(jsonString);
                         _dialogService.ShowMessage("Log file has been saved as " + filePath, "File saved");
-                    }, () => SaveToFileOpenLogFileOpenLogFileOpenLogFileEnabled && !_logService.IsFilterLogsEmpty()));
+                    }, () => !StreamToFileIsEnabled && !_logService.IsFilterLogsEmpty()));
             }
         }
 
@@ -246,7 +241,7 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                 {
                     var logs = await _fileSystemService.LoadLogsFromFileAsync();
                     _logService.LoadLogs(logs, LogLevel, Category);
-                }, () => SaveToFileOpenLogFileOpenLogFileOpenLogFileEnabled && _fileSystemService.LogFileExists()));
+                }, () => !StreamToFileIsEnabled && _fileSystemService.LogFileExists()));
             }
         }
 
@@ -258,7 +253,7 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                     {
                         string url = _configurationService.GetValue("DatabaseUrl");
                         string category = _configurationService.GetValue("Category");
-                        string isAutoScrollEnabledStr = _configurationService.GetValue("AutoScrollIsEnabled");
+                        string autoScrollEnabledStr = _configurationService.GetValue("AutoScrollEnabled");
                         if (!String.IsNullOrEmpty(url))
                         {
                             DatabaseUrl = url;
@@ -267,10 +262,10 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                         {
                             Category = category;
                         }
-                        bool isAutoScrollEnabled;
-                        if (Boolean.TryParse(isAutoScrollEnabledStr, out isAutoScrollEnabled))
+                        bool autoScrollEnabled;
+                        if (Boolean.TryParse(autoScrollEnabledStr, out autoScrollEnabled))
                         {
-                            AutoScrollIsEnabled = AutoScrollBehavior.IsEnabled = isAutoScrollEnabled;
+                            AutoScrollEnabled = AutoScrollBehavior.IsEnabled = autoScrollEnabled;
                         }
                         DatabaseUrlIsFocused = true;
                     }));
@@ -283,8 +278,8 @@ namespace RavenAdminLogsCollectionTool.ViewModel
             {
                 return _keepDownCommand ?? (_keepDownCommand = new RelayCommand<bool>(isEnabled =>
                     {
-                        AutoScrollIsEnabled = AutoScrollBehavior.IsEnabled = isEnabled;
-                        _configurationService.SetValue("AutoScrollIsEnabled", AutoScrollIsEnabled.ToString());
+                        AutoScrollEnabled = AutoScrollBehavior.IsEnabled = isEnabled;
+                        _configurationService.SetValue("AutoScrollEnabled", AutoScrollEnabled.ToString());
                     }));
             }
         }
@@ -296,15 +291,6 @@ namespace RavenAdminLogsCollectionTool.ViewModel
                 return _streamToFileCommand ?? (_streamToFileCommand = new RelayCommand<bool>(isEnabled =>
                 {
                     StreamToFileIsEnabled = isEnabled;
-                    if (StreamToFileIsEnabled)
-                    {
-                        SaveToFileOpenLogFileOpenLogFileOpenLogFileEnabled = false;
-                       // _dialogService.ShowMessage("Logs would be saved to file in real time", "Open stream to file");
-                    }
-                    else
-                    {
-                        SaveToFileOpenLogFileOpenLogFileOpenLogFileEnabled = true;
-                    }
                 }));
             }
         }
